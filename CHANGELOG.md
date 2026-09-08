@@ -3,7 +3,23 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versionado según
 [SemVer](https://semver.org/lang/es/).
 
-## [Sin publicar] — 2026-08-24
+## [Sin publicar] — 2026-09-08
+
+### Seguridad
+
+- **Cabeceras de seguridad y CSP en `next.config.ts`** (`headers()` para `/:path*`):
+  `Content-Security-Policy` acotada a `'self'` (la app no carga terceros ni hace `fetch` en
+  runtime), `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`,
+  `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` (desactiva cámara,
+  micrófono, geolocalización y topics) y `Strict-Transport-Security`. Además
+  `poweredByHeader: false`. La CSP mantiene `'unsafe-inline'` en `script-src` porque lo exige el
+  payload RSC de Next; `'unsafe-eval'` y `ws:` solo se añaden en desarrollo (HMR). Justificación y
+  alternativas en [ADR-0005](docs/adr/0005-cabeceras-de-seguridad-y-cadena-de-suministro.md).
+- **Guarda de gestor de paquetes** (`preinstall: "npx only-allow pnpm"` en `package.json`,
+  CLAUDE.md §3): un `npm install` o `yarn install` accidental ahora aborta con mensaje claro.
+- **CI de verificación** ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)): en cada push/PR
+  a `main` corre `pnpm audit --audit-level high`, `pnpm lint`, `pnpm typecheck` y `pnpm build` con
+  `--frozen-lockfile`. Nuevo script `pnpm audit` como atajo local.
 
 ### Corregido
 

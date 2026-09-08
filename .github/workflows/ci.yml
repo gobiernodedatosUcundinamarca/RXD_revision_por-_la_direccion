@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancela ejecuciones anteriores de la misma rama/PR aún en curso.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verificar:
+    name: Lint · tipos · build · auditoría
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v4
+
+      - name: Instalar pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          # Usa la versión declarada en package.json -> "packageManager".
+          run_install: false
+
+      - name: Instalar Node.js LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Instalar dependencias (lockfile congelado)
+        run: pnpm install --frozen-lockfile
+
+      - name: Auditoría de seguridad
+        # CLAUDE.md §2: no se fusiona con vulnerabilidades altas/críticas.
+        run: pnpm audit --audit-level high
+
+      - name: ESLint
+        run: pnpm lint
+
+      - name: Comprobación de tipos
+        run: pnpm typecheck
+
+      - name: Build de producción
+        run: pnpm build

@@ -8,6 +8,7 @@
     "pnpm": ">=11"
   },
   "scripts": {
+    "preinstall": "npx only-allow pnpm",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -17,7 +18,8 @@
     "test:ui": "playwright test --ui",
     "test:debug": "playwright test --debug",
     "datos:limpiar": "node scripts/limpiar-excel.mjs",
-    "datos:importar": "node scripts/limpiar-excel.mjs && node scripts/importar-om-rxd.mjs"
+    "datos:importar": "node scripts/limpiar-excel.mjs && node scripts/importar-om-rxd.mjs",
+    "audit": "pnpm audit --audit-level high"
   },
   "dependencies": {
     "next": "16.2.11",
