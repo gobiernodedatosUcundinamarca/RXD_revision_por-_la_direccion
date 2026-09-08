@@ -40,6 +40,13 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ### Añadido
 
+- **Diagrama de arquitectura interactivo** ([`docs/arquitectura-visual.html`](docs/arquitectura-visual.html),
+  fuente versionada [`docs/arquitectura-visual.json`](docs/arquitectura-visual.json)): mapa de
+  componentes y flujo — libros `.xlsx` → ETL → `om-rxd.json` → `lib/om/` → estado del tablero →
+  componentes → App Router → navegador — con los límites «fuera del build», «aplicación Next.js» y
+  «cabeceras + CSP». HTML autónomo con temas claro/oscuro, foco y exportación; generado con archify.
+  Enlazado desde [`docs/arquitectura.md`](docs/arquitectura.md).
+
 - **Estandarización de redacciones del campo `Responsable`** (`estandarizarResponsables`, nueva en
   `scripts/lib/dominio.mjs`, corre al final de `importar-om-rxd.mjs`). El texto libre tenía
   redacciones que solo diferían en mayúsculas, tildes o puntuación de cierre («SGA» / «SGA.» /

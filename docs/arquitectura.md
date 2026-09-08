@@ -3,6 +3,12 @@
 Visión general de capas y flujo de datos. El detalle del origen y las métricas está en
 [datos.md](datos.md); el catálogo de componentes, en [componentes.md](componentes.md).
 
+> **Diagrama interactivo:** [`arquitectura-visual.html`](arquitectura-visual.html) — mapa de
+> componentes, límites (ETL fuera del build · aplicación Next.js · cabeceras/CSP) y flujo, con
+> temas claro/oscuro, foco y exportación. Fuente versionada:
+> [`arquitectura-visual.json`](arquitectura-visual.json); se regenera con
+> `archify deliver architecture docs/arquitectura-visual.json docs/arquitectura-visual.html`.
+
 ---
 
 ## 1. Flujo de datos

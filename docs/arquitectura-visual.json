@@ -1,0 +1,302 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Arquitectura — Tablero RXD de Oportunidades de Mejora",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1350,
+      500
+    ],
+    "views": [
+      {
+        "id": "etl",
+        "label": "ETL fuera del build",
+        "focus": [
+          "libros",
+          "limpiar",
+          "importar",
+          "dataset"
+        ],
+        "note": "De los libros de Excel al dataset JSON versionado, con pnpm datos:importar."
+      },
+      {
+        "id": "datos",
+        "label": "Capa de datos y estado",
+        "focus": [
+          "dataset",
+          "libom",
+          "estado"
+        ],
+        "note": "lib/om/ es la unica puerta a los datos; el estado del tablero se comparte entre vistas."
+      },
+      {
+        "id": "entrega",
+        "label": "Render y entrega",
+        "focus": [
+          "componentes",
+          "rutas",
+          "navegador"
+        ],
+        "note": "App Router con RSC; el navegador recibe HTML estatico con cabeceras y CSP."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "libros",
+      "type": "external",
+      "label": "Libros de seguimiento",
+      "sublabel": "data/*.xlsx",
+      "tag": "5 sistemas",
+      "pos": [
+        48,
+        56
+      ],
+      "size": [
+        210,
+        58
+      ]
+    },
+    {
+      "id": "limpiar",
+      "type": "backend",
+      "label": "Paso 1 - Limpieza",
+      "sublabel": "limpiar-excel.mjs",
+      "pos": [
+        398,
+        56
+      ],
+      "size": [
+        210,
+        58
+      ]
+    },
+    {
+      "id": "importar",
+      "type": "backend",
+      "label": "Paso 2 - Importacion",
+      "sublabel": "importar-om-rxd.mjs",
+      "pos": [
+        748,
+        56
+      ],
+      "size": [
+        210,
+        58
+      ]
+    },
+    {
+      "id": "dataset",
+      "type": "database",
+      "label": "Dataset generado",
+      "sublabel": "src/data/om-rxd.json",
+      "tag": "versionado - 162 OM",
+      "pos": [
+        1098,
+        56
+      ],
+      "size": [
+        210,
+        58
+      ]
+    },
+    {
+      "id": "libom",
+      "type": "backend",
+      "label": "Capa de acceso a datos",
+      "sublabel": "src/lib/om/",
+      "tag": "SOLID - D",
+      "pos": [
+        1098,
+        210
+      ],
+      "size": [
+        210,
+        70
+      ]
+    },
+    {
+      "id": "estado",
+      "type": "frontend",
+      "label": "Estado del tablero",
+      "sublabel": "features/dashboard/",
+      "tag": "FiltrosProvider",
+      "pos": [
+        748,
+        210
+      ],
+      "size": [
+        210,
+        70
+      ]
+    },
+    {
+      "id": "componentes",
+      "type": "frontend",
+      "label": "Componentes UI",
+      "sublabel": "src/components/",
+      "tag": "charts - layout - dashboard",
+      "pos": [
+        398,
+        356
+      ],
+      "size": [
+        210,
+        70
+      ]
+    },
+    {
+      "id": "rutas",
+      "type": "frontend",
+      "label": "Next.js App Router",
+      "sublabel": "src/app/",
+      "tag": "portada + layout interno + /consolidado",
+      "pos": [
+        748,
+        356
+      ],
+      "size": [
+        210,
+        70
+      ]
+    },
+    {
+      "id": "navegador",
+      "type": "external",
+      "label": "Navegador",
+      "sublabel": "HTML estatico (RSC / SSG)",
+      "pos": [
+        1098,
+        356
+      ],
+      "size": [
+        210,
+        70
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Fuera del build - pnpm datos:importar",
+      "wraps": [
+        "libros",
+        "limpiar",
+        "importar",
+        "dataset"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "Aplicacion Next.js - App Router / RSC",
+      "wraps": [
+        "libom",
+        "estado",
+        "componentes",
+        "rutas"
+      ]
+    },
+    {
+      "kind": "security-group",
+      "label": "next.config.ts - cabeceras + CSP",
+      "wraps": [
+        "rutas"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "c-libros-limpiar",
+      "from": "libros",
+      "to": "limpiar",
+      "label": "limpia hojas/fechas",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c-limpiar-importar",
+      "from": "limpiar",
+      "to": "importar",
+      "label": "data-limpio/",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c-importar-dataset",
+      "from": "importar",
+      "to": "dataset",
+      "label": "om-rxd.json",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c-dataset-libom",
+      "from": "dataset",
+      "to": "libom",
+      "label": "import en el bundle",
+      "variant": "emphasis",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 38
+    },
+    {
+      "id": "c-libom-estado",
+      "from": "libom",
+      "to": "estado",
+      "label": "OM + metricas",
+      "variant": "emphasis",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "id": "c-estado-componentes",
+      "from": "estado",
+      "to": "componentes",
+      "label": "OM filtradas",
+      "variant": "emphasis",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c-componentes-rutas",
+      "from": "componentes",
+      "to": "rutas",
+      "label": "ChartCard, KPIs",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c-rutas-navegador",
+      "from": "rutas",
+      "to": "navegador",
+      "label": "HTML + CSP",
+      "variant": "emphasis"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "ETL fuera del build",
+      "items": [
+        "data/*.xlsx es la fuente de verdad (5 sistemas de gestion)",
+        "limpiar-excel.mjs -> data-limpio/ -> importar-om-rxd.mjs, sin dependencias",
+        "Salida versionada: src/data/om-rxd.json (162 OM)"
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "Aplicacion Next.js",
+      "items": [
+        "lib/om/ es la unica puerta a los datos: cambiar el origen no toca la UI (SOLID-D)",
+        "FiltrosProvider + useTableroOM: la seleccion se comparte entre vistas",
+        "Registro de temas: se anaden sistemas sin modificar la arquitectura (SOLID-O)"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Seguridad",
+      "items": [
+        "Sitio estatico: sin API routes, sin auth, sin fetch en runtime",
+        "Cabeceras y CSP acotada a 'self' en next.config.ts",
+        "CI: pnpm audit + lint + typecheck + build en cada push/PR"
+      ]
+    }
+  ]
+}
