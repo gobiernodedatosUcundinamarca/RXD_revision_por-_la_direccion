@@ -9,15 +9,17 @@ oportunidad.
 
 | Sistema | Sigla | OM | Vigencias |
 |---|---|---:|---|
-| Sistema de Gestión de Calidad | SGC | 76 | 2022–2025 |
-| Sistema de Gestión Ambiental | SGA | 25 | 2022–2025 |
+| Sistema de Gestión de Calidad | SGC | 77 | 2022–2025 |
+| Sistema de Gestión Ambiental | SGA | 38 | 2022–2025 |
 | Seguridad y Salud en el Trabajo | SG-SST | 23 | 2023–2025 |
 | Seguridad de la Información | SGSI | 14 | 2023–2025 |
 | Sistema de Gestión Antisoborno | SGAS | 10 | 2024–2025 |
 
-La vista **Todos los sistemas de gestión** (`/consolidado`) compara el estado vigente de los cinco
-sistemas entre sí, antes de entrar al tablero de uno en particular. Es la acción principal de la
-portada.
+Total: **162 OM** (dataset generado el 2026-08-25 con `pnpm datos:importar`).
+
+La vista **Todos los sistemas integrados de gestión** (`/consolidado`) compara el estado vigente de
+los cinco sistemas entre sí, antes de entrar al tablero de uno en particular. Es la acción principal
+de la portada.
 
 > Los datos provienen de los libros de seguimiento en [`data/`](data/) y se importan con
 > `pnpm datos:importar`. Ver [documentación de datos](docs/datos.md).
@@ -30,7 +32,8 @@ portada.
 - **Tailwind CSS 4** + tokens CSS institucionales
 - **Recharts** para las gráficas
 - **Playwright** para pruebas de extremo a extremo
-- **pnpm** como único gestor de paquetes
+- **pnpm** como único gestor de paquetes (guarda `only-allow pnpm` en `preinstall`)
+- **GitHub Actions** para CI (`audit` + `lint` + `typecheck` + `build` en cada push/PR a `main`)
 
 ## Requisitos
 
@@ -58,9 +61,10 @@ Abrir [http://localhost:3000/temas](http://localhost:3000/temas).
 | `pnpm typecheck` | `tsc --noEmit` |
 | `pnpm test` | Pruebas de extremo a extremo (Playwright) |
 | `pnpm test:ui` | Playwright en modo interactivo |
+| `pnpm test:debug` | Playwright paso a paso (inspector) |
 | `pnpm datos:limpiar` | Genera `data-limpio/*.xlsx` (libros planos) desde `data/*.xlsx` |
 | `pnpm datos:importar` | Limpia y regenera `src/data/om-rxd.json` |
-| `pnpm audit` | Auditoría de seguridad de dependencias |
+| `pnpm audit` | Auditoría de seguridad de dependencias (`--audit-level high`) |
 | `pnpm outdated` | Dependencias desactualizadas |
 
 Ejecutar una sola prueba: `pnpm test -g "<nombre de la prueba>"`.
@@ -81,9 +85,27 @@ El proceso reporta cuántas OM y cortes leyó por sistema, y avisa de hojas dupl
 fecha ininterpretable. Si algo no cuadra, `data-limpio/` permite revisar en Excel qué entendió el
 importador antes de mirar el JSON. Detalle en [`docs/datos.md`](docs/datos.md).
 
+## Seguridad
+
+La app es un tablero **estático**: no tiene API routes, Server Actions, `middleware`,
+autenticación ni `fetch` a servicios externos en runtime. Los datos son un JSON compilado en el
+bundle, generado fuera del build por el ETL.
+
+- **Cabeceras y CSP** en [`next.config.ts`](next.config.ts): `Content-Security-Policy` acotada a
+  `'self'`, `X-Content-Type-Options`, `X-Frame-Options: DENY`, `Referrer-Policy`,
+  `Permissions-Policy` y `Strict-Transport-Security`; `poweredByHeader: false`.
+  `'unsafe-eval'` y `ws:` solo se añaden en desarrollo (HMR).
+- **Cadena de suministro**: `preinstall` bloquea `npm`/`yarn`; la CI corre
+  `pnpm audit --audit-level high` en cada push/PR.
+- Verificar en local: `pnpm build && pnpm start`, luego `curl -I http://localhost:3000`.
+
+Justificación y alternativas descartadas en
+[ADR-0005](docs/adr/0005-cabeceras-de-seguridad-y-cadena-de-suministro.md).
+
 ## Estructura
 
 ```
+.github/workflows/     CI: audit + lint + typecheck + build
 data/                  Libros de seguimiento (.xlsx) — fuente de verdad
 data-limpio/           Libros planos generados (no editar a mano)
 imagenes/              Logotipos originales de los sistemas de gestión
