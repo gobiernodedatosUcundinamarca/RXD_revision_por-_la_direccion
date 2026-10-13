@@ -15,14 +15,17 @@ oportunidad.
 | Seguridad de la Información | SGSI | 14 | 2023–2025 |
 | Sistema de Gestión Antisoborno | SGAS | 10 | 2024–2025 |
 
-Total: **162 OM** (dataset generado el 2026-08-25 con `pnpm datos:importar`).
+Total: **162 OM** y **1 021 registros de seguimiento**, con último corte de la vigencia 2025 al
+30-sep-2026 (dataset generado el 2026-10-13 con `pnpm datos:importar`).
 
 La vista **Todos los sistemas integrados de gestión** (`/consolidado`) compara el estado vigente de
 los cinco sistemas entre sí, antes de entrar al tablero de uno en particular. Es la acción principal
 de la portada.
 
 > Los datos provienen de los libros de seguimiento en [`data/`](data/) y se importan con
-> `pnpm datos:importar`. Ver [documentación de datos](docs/datos.md).
+> `pnpm datos:importar`. Los seguimientos nuevos se dejan en una subcarpeta fechada
+> `data/<dd-mm-aaaa>/` y solo agregan los cortes que aún no estaban registrados. Ver
+> [documentación de datos](docs/datos.md).
 
 ---
 

@@ -3,6 +3,23 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versionado según
 [SemVer](https://semver.org/lang/es/).
 
+## [Sin publicar] — 2026-10-13
+
+### Añadido
+
+- **Actualizaciones incrementales de datos.** Los libros de las subcarpetas fechadas
+  `data/<dd-mm-aaaa>/` se aplican sobre los libros base y **solo agregan los cortes cuya fecha aún
+  no estaba registrada**; lo existente no se reemplaza y las diferencias se avisan por consola
+  ([ADR-0006](docs/adr/0006-actualizaciones-incrementales-de-datos.md)).
+- **Corte del 30-sep-2026** desde `data/13-10-2026/SISTEMAS INTEGRADOS DE GESTION.xlsx`: 26
+  seguimientos nuevos en la vigencia 2025 (SGC 13, SGA 5, SGSI 4, SGAS 4). SG-SST no trae cortes
+  nuevos. Dataset: 162 OM, 995 → 1 021 registros de seguimiento.
+
+### Corregido
+
+- `normalizarFecha` reconoce abreviaturas de mes (`30 SEP 2026`). Sin esto, el corte de septiembre
+  de SGC se habría descartado por «fecha no interpretable».
+
 ## [Sin publicar] — 2026-09-08
 
 ### Seguridad
