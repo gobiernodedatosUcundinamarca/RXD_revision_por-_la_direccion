@@ -115,6 +115,7 @@ pasos —sistemas, áreas, normalización de fechas— viven en
 | Fecha como `30/06/2026`, `30 de junio 2026`, `Abril 30 de 2026`, `30 SEP 2026` | Se convierte a ISO (acepta nombres de mes completos y abreviados) |
 | Fecha como texto libre (`Inmediato`, `IPA 2025`, `Vigencia 2024`) | `fechaEntrega: null`; se conserva el texto original en `fechaEntregaTexto` y es lo que muestra la interfaz |
 | Corte cuya fecha no se puede interpretar | Se descarta con aviso, para garantizar que **todo seguimiento tenga fecha** |
+| Corte con fecha mal digitada, declarado en `CORTES_DESCARTADOS` ([`dominio.mjs`](../scripts/lib/dominio.mjs)) | Se descarta con aviso, solo si está fuera de orden cronológico. Hoy: los dos cortes «30 DE DICIEMBRE 2026» de SGSI 2025, que no corresponden a esa fecha; su corte vigente es el 30-sep-2026 |
 | Observaciones muy largas | Se recortan a 400 caracteres; el texto íntegro permanece en los libros de `data/` |
 | Libro de actualización (`data/<dd-mm-aaaa>/`) con un corte cuya fecha ya existe | No se aplica; si su contenido difiere de lo registrado, se avisa por consola |
 | Libro de actualización con un corte de fecha nueva | Se agrega a la hoja base de la misma vigencia, para las OM que coinciden |

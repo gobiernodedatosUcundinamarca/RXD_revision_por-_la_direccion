@@ -34,6 +34,22 @@ export const SISTEMAS = [
 ];
 
 /**
+ * Cortes con fecha mal digitada en los libros que se descartan por indicación
+ * del responsable de los datos. Solo se descartan cuando están **fuera de orden
+ * cronológico** (a su derecha hay un corte con fecha anterior): un corte
+ * legítimo con la misma fecha llegaría al final de la hoja y no se toca.
+ */
+export const CORTES_DESCARTADOS = [
+  {
+    sistema: "sgsi",
+    fecha: "2026-12-30",
+    motivo:
+      "los dos primeros cortes de SGSI 2025 dicen «30 DE DICIEMBRE 2026» y no corresponden a esa fecha; " +
+      "el corte vigente es el del 30 de septiembre de 2026 (indicación del 2026-10-13)",
+  },
+];
+
+/**
  * Áreas institucionales canónicas. El campo «Responsable» es texto libre y con
  * 95 variantes distintas no sirve como dimensión de análisis, así que cada OM
  * se etiqueta con todas las áreas que menciona. El orden es indiferente: se

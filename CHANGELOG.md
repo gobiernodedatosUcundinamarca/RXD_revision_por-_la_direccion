@@ -17,6 +17,11 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ### Corregido
 
+- **SGSI 2025: se descartan los dos cortes «30 DE DICIEMBRE 2026»**, que no corresponden a esa
+  fecha. Hacían que el último corte del tablero fuera 30-dic-2026 (fecha futura), lo que inflaba las
+  OM vencidas y descolocaba la serie de evolución. Ahora el corte vigente de SGSI 2025 es el
+  30-sep-2026 y el último corte global también. Regla explícita en `CORTES_DESCARTADOS`
+  (`scripts/lib/dominio.mjs`). Afecta 4 OM, 8 registros (1 021 → 1 013).
 - `normalizarFecha` reconoce abreviaturas de mes (`30 SEP 2026`). Sin esto, el corte de septiembre
   de SGC se habría descartado por «fecha no interpretable».
 

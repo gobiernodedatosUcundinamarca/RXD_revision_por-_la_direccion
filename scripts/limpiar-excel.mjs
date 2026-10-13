@@ -26,7 +26,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { leerLibro } from "./lib/xlsx.mjs";
 import { escribirLibro } from "./lib/xlsx-escribir.mjs";
-import { SISTEMAS, limpiar, normalizarFecha, vigenciaDeHoja } from "./lib/dominio.mjs";
+import { CORTES_DESCARTADOS, SISTEMAS, limpiar, normalizarFecha, vigenciaDeHoja } from "./lib/dominio.mjs";
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), "..");
 const ORIGEN = join(RAIZ, "data");
@@ -49,9 +49,10 @@ const COLUMNAS_BASE = [
  *
  * No se puede asumir que sean adyacentes: alguna hoja intercala una columna
  * «EVIDENCIA» entre ambas. Los cortes cuya fecha no se puede interpretar se
- * descartan con aviso, para que todo seguimiento tenga fecha.
+ * descartan con aviso, para que todo seguimiento tenga fecha. También los
+ * declarados en `CORTES_DESCARTADOS` (fecha mal digitada).
  */
-function mapearCortes(encabezados, avisos, contexto) {
+function mapearCortes(encabezados, definicion, avisos, contexto) {
   const cortes = [];
 
   for (let col = 0; col < encabezados.length; col++) {
@@ -91,7 +92,13 @@ function mapearCortes(encabezados, avisos, contexto) {
     });
   }
 
-  return cortes;
+  return cortes.filter((corte, i) => {
+    const regla = CORTES_DESCARTADOS.find((r) => r.sistema === definicion.id && r.fecha === corte.fecha);
+    const fueraDeOrden = cortes.slice(i + 1).some((siguiente) => siguiente.fecha < corte.fecha);
+    if (!regla || !fueraDeOrden) return true;
+    avisos.push(`${contexto}: corte ${corte.fecha} (columna ${corte.colObservacion}) descartado — ${regla.motivo}`);
+    return false;
+  });
 }
 
 /**
@@ -161,7 +168,7 @@ function primerNumero(grupo, columna) {
 }
 
 /** Convierte una hoja del libro original en una hoja limpia. */
-function limpiarHoja(hoja, avisos, contexto) {
+function limpiarHoja(hoja, definicion, avisos, contexto) {
   const filas = hoja.filas.filter((f) => f && f.some((c) => c != null && c !== ""));
   if (filas.length < 2) return null;
 
@@ -169,7 +176,7 @@ function limpiarHoja(hoja, avisos, contexto) {
   if (!/PM\s*N/i.test(String(encabezados[0] ?? ""))) return null;
 
   const vigencia = vigenciaDeHoja(hoja.nombre);
-  const cortes = mapearCortes(encabezados, avisos, contexto);
+  const cortes = mapearCortes(encabezados, definicion, avisos, contexto);
 
   const cabecera = [
     ...COLUMNAS_BASE,
@@ -240,11 +247,11 @@ function carpetasDeActualizacion() {
  * nombre no trae año («SGSI», «SST»), la hoja del sistema con la que más OM
  * coinciden.
  */
-function aplicarActualizacion(hoja, hojasSistema, avisos, contexto) {
+function aplicarActualizacion(hoja, definicion, hojasSistema, avisos, contexto) {
   const filas = hoja.filas.filter((f) => f && f.some((c) => c != null && c !== ""));
   if (filas.length < 2 || !/PM\s*N/i.test(String(filas[0][0] ?? ""))) return null;
 
-  const cortes = mapearCortes(filas[0], avisos, contexto);
+  const cortes = mapearCortes(filas[0], definicion, avisos, contexto);
   const grupos = agruparEnOM(filas).map((grupo) => ({
     grupo,
     numero: valorUnico(grupo, 0),
@@ -372,7 +379,7 @@ function main() {
         continue;
       }
 
-      const limpia = limpiarHoja(hoja, avisos, `${definicion.sigla} «${hoja.nombre}»`);
+      const limpia = limpiarHoja(hoja, definicion, avisos, `${definicion.sigla} «${hoja.nombre}»`);
       if (!limpia || limpia.registros === 0) continue;
 
       if (vigencia) vigenciasVistas.add(vigencia);
@@ -403,7 +410,7 @@ function main() {
           continue;
         }
 
-        const resultado = aplicarActualizacion(hoja, hojasSistema, avisos, contexto);
+        const resultado = aplicarActualizacion(hoja, definicion, hojasSistema, avisos, contexto);
         if (!resultado) continue;
         console.log(
           `↻ ${carpeta.nombre}/${libro} «${hoja.nombre}» → ${definicion.sigla} «${resultado.destino}»: ` +
