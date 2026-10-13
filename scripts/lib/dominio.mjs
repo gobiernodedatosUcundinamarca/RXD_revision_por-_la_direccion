@@ -16,15 +16,21 @@ import { fechaDesdeSerial } from "./xlsx.mjs";
 export const MAX_OBSERVACION = 400;
 
 /**
- * Sistemas de gestión reconocidos, identificados por el nombre del archivo.
- * El orden define el orden de aparición en la portada de temas.
+ * Sistemas de gestión reconocidos. El orden define el orden de aparición en la
+ * portada de temas.
+ *
+ * - `patron` identifica el sistema por el **nombre del archivo** de los libros
+ *   base de `data/` (un libro por sistema).
+ * - `patronHoja` lo identifica por el **nombre de la hoja** en los libros de
+ *   actualización de `data/<dd-mm-aaaa>/`, que traen todos los sistemas en un
+ *   solo libro («SGC 2025», «SGA 2025», «SGAS 2025», «SGSI», «SST»).
  */
 export const SISTEMAS = [
-  { id: "sgc", sigla: "SGC", nombre: "Sistema de Gestión de Calidad", patron: /_SGC/i },
-  { id: "sga", sigla: "SGA", nombre: "Sistema de Gestión Ambiental", patron: /_SGA[\s_]/i },
-  { id: "sgsst", sigla: "SG-SST", nombre: "Seguridad y Salud en el Trabajo", patron: /SG[\s-]*SST/i },
-  { id: "sgsi", sigla: "SGSI", nombre: "Seguridad de la Información", patron: /SG\s*SI\b/i },
-  { id: "sgas", sigla: "SGAS", nombre: "Sistema de Gestión Antisoborno", patron: /_SGAS/i },
+  { id: "sgc", sigla: "SGC", nombre: "Sistema de Gestión de Calidad", patron: /_SGC/i, patronHoja: /\bSGC\b/i },
+  { id: "sga", sigla: "SGA", nombre: "Sistema de Gestión Ambiental", patron: /_SGA[\s_]/i, patronHoja: /\bSGA\b/i },
+  { id: "sgsst", sigla: "SG-SST", nombre: "Seguridad y Salud en el Trabajo", patron: /SG[\s-]*SST/i, patronHoja: /\bSST\b|SG[\s-]*SST/i },
+  { id: "sgsi", sigla: "SGSI", nombre: "Seguridad de la Información", patron: /SG\s*SI\b/i, patronHoja: /SG\s*SI\b/i },
+  { id: "sgas", sigla: "SGAS", nombre: "Sistema de Gestión Antisoborno", patron: /_SGAS/i, patronHoja: /\bSGAS\b/i },
 ];
 
 /**
@@ -62,10 +68,17 @@ export const AREAS = [
   ["Contabilidad", /contabilidad/i],
 ];
 
+/**
+ * Nombres de mes reconocidos. Los completos van primero para que la
+ * alternancia del regex los prefiera; las abreviaturas cubren encabezados como
+ * «30 SEP 2026».
+ */
 const MESES = {
   enero: 1, febrero: 2, marzo: 3, abril: 4, mayo: 5, junio: 6,
   julio: 7, agosto: 8, septiembre: 9, setiembre: 9, octubre: 10,
   noviembre: 11, diciembre: 12,
+  ene: 1, feb: 2, mar: 3, abr: 4, may: 5, jun: 6, jul: 7, ago: 8,
+  sept: 9, sep: 9, set: 9, oct: 10, nov: 11, dic: 12,
 };
 
 /** Colapsa espacios y recorta; convierte `null`/`undefined` en cadena vacía. */

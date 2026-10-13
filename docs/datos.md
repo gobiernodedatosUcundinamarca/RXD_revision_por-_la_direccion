@@ -19,6 +19,22 @@ originó las OM).
 | `SEG OM RXD_SG SI JUNIO 2026.xlsx` | Seguridad de la Información | `sgsi` |
 | `SEG OM RXD_SGAS JUNIO 2026.xlsx` | Sistema de Gestión Antisoborno | `sgas` |
 
+### Actualizaciones (subcarpetas fechadas)
+
+Los seguimientos posteriores llegan en subcarpetas `data/<dd-mm-aaaa>/` (la fecha de recepción), con
+**un solo libro y una hoja por sistema**. Se aplican sobre los libros base en orden cronológico y
+**solo agregan los cortes cuya fecha aún no está registrada**: no reemplazan observaciones ni
+calificaciones existentes, ni agregan o quitan OM. Ver
+[ADR-0006](adr/0006-actualizaciones-incrementales-de-datos.md).
+
+| Carpeta | Libro | Aporte |
+|---|---|---|
+| `13-10-2026/` | `SISTEMAS INTEGRADOS DE GESTION.xlsx` | Corte **30-sep-2026** de la vigencia 2025 en SGC, SGA, SGSI y SGAS (SG-SST no trae cortes nuevos) |
+
+El sistema de cada hoja se reconoce por el nombre de la hoja (`SGC 2025`, `SST`, `SGSI`…) y la hoja
+base por coincidencia de OM (`PM N°` + texto de la oportunidad), así que la hoja no necesita llevar
+el año en el nombre.
+
 ### Estructura de cada hoja
 
 | Columna | Contenido |
@@ -96,10 +112,12 @@ pasos —sistemas, áreas, normalización de fechas— viven en
 | Fila de cierre `TOTAL AVANCES` | Se descarta: no es una OM |
 | `PM N°` vacío | La OM se conserva con `numero: null` |
 | Fecha como número de serie de Excel (`46112`) | Se convierte a ISO (`2026-04-30`) |
-| Fecha como `30/06/2026`, `30 de junio 2026`, `Abril 30 de 2026` | Se convierte a ISO |
+| Fecha como `30/06/2026`, `30 de junio 2026`, `Abril 30 de 2026`, `30 SEP 2026` | Se convierte a ISO (acepta nombres de mes completos y abreviados) |
 | Fecha como texto libre (`Inmediato`, `IPA 2025`, `Vigencia 2024`) | `fechaEntrega: null`; se conserva el texto original en `fechaEntregaTexto` y es lo que muestra la interfaz |
 | Corte cuya fecha no se puede interpretar | Se descarta con aviso, para garantizar que **todo seguimiento tenga fecha** |
 | Observaciones muy largas | Se recortan a 400 caracteres; el texto íntegro permanece en los libros de `data/` |
+| Libro de actualización (`data/<dd-mm-aaaa>/`) con un corte cuya fecha ya existe | No se aplica; si su contenido difiere de lo registrado, se avisa por consola |
+| Libro de actualización con un corte de fecha nueva | Se agrega a la hoja base de la misma vigencia, para las OM que coinciden |
 
 ### Celdas combinadas
 

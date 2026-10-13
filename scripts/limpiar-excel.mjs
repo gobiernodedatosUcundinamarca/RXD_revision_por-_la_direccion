@@ -15,6 +15,11 @@
  *
  * No inventa, no corrige y no descarta contenido: solo reordena lo que ya está,
  * de modo que el paso de importación no tenga que interpretar formato.
+ *
+ * Actualizaciones incrementales: los libros de las subcarpetas fechadas
+ * `data/<dd-mm-aaaa>/` se aplican después, en orden cronológico, y **solo
+ * agregan los cortes cuya fecha aún no está registrada**. Lo ya registrado no se
+ * reemplaza; si el libro nuevo lo contradice, se avisa por consola.
  */
 import { readdirSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
 import { join, dirname } from "node:path";
@@ -194,7 +199,129 @@ function limpiarHoja(hoja, avisos, contexto) {
     ];
   });
 
-  return { nombre: hoja.nombre, filas: [cabecera, ...cuerpo], registros: cuerpo.length };
+  return { nombre: hoja.nombre, vigencia, filas: [cabecera, ...cuerpo], registros: cuerpo.length };
+}
+
+/** Posición de `PM N°` y de la oportunidad en una hoja limpia. */
+const COL_LIMPIA = { numero: 0, oportunidad: 5 };
+
+/** Identifica una OM entre libros: mismo `PM N°` y mismo texto de oportunidad. */
+const claveOM = (numero, oportunidad) => `${limpiar(numero)}|${limpiar(oportunidad).toLowerCase()}`;
+
+/** Fecha ISO de cada encabezado `Observación AAAA-MM-DD · …` de una hoja limpia, con su columna. */
+function cortesDeHojaLimpia(hoja) {
+  const cortes = [];
+  hoja.filas[0].forEach((cabecera, col) => {
+    const fecha = String(cabecera).match(/^Observación (\d{4}-\d{2}-\d{2})/)?.[1];
+    if (fecha) cortes.push({ fecha, colObservacion: col, colClasificacion: col + 1 });
+  });
+  return cortes;
+}
+
+/**
+ * Subcarpetas `data/<dd-mm-aaaa>/` en orden cronológico: cada una trae un libro
+ * de actualización con la fecha en que se recibió.
+ */
+function carpetasDeActualizacion() {
+  return readdirSync(ORIGEN, { withFileTypes: true })
+    .filter((entrada) => entrada.isDirectory())
+    .map((entrada) => ({ nombre: entrada.name, fecha: normalizarFecha(entrada.name) }))
+    .filter((carpeta) => carpeta.fecha)
+    .sort((a, b) => a.fecha.localeCompare(b.fecha));
+}
+
+/**
+ * Aplica una hoja de un libro de actualización sobre las hojas limpias de su
+ * sistema. **Solo agrega cortes cuya fecha aún no está registrada**: nunca
+ * modifica observaciones ni calificaciones existentes, ni agrega o quita OM.
+ * Lo que difiere de lo ya registrado se reporta por consola para revisión.
+ *
+ * La hoja destino es la de la vigencia que indica el nombre de la hoja; si el
+ * nombre no trae año («SGSI», «SST»), la hoja del sistema con la que más OM
+ * coinciden.
+ */
+function aplicarActualizacion(hoja, hojasSistema, avisos, contexto) {
+  const filas = hoja.filas.filter((f) => f && f.some((c) => c != null && c !== ""));
+  if (filas.length < 2 || !/PM\s*N/i.test(String(filas[0][0] ?? ""))) return null;
+
+  const cortes = mapearCortes(filas[0], avisos, contexto);
+  const grupos = agruparEnOM(filas).map((grupo) => ({
+    grupo,
+    numero: valorUnico(grupo, 0),
+    clave: claveOM(valorUnico(grupo, 0), valorUnico(grupo, 3)),
+  }));
+
+  const vigencia = vigenciaDeHoja(hoja.nombre);
+  const candidatas = vigencia ? hojasSistema.filter((h) => h.vigencia === vigencia) : hojasSistema;
+  const coincidencias = (destino) => {
+    const claves = new Set(destino.filas.slice(1).map((f) => claveOM(f[COL_LIMPIA.numero], f[COL_LIMPIA.oportunidad])));
+    return grupos.filter((g) => claves.has(g.clave)).length;
+  };
+  const destino = candidatas
+    .map((h) => ({ hoja: h, n: coincidencias(h) }))
+    .filter((c) => c.n > 0)
+    .sort((a, b) => b.n - a.n || String(b.hoja.vigencia).localeCompare(String(a.hoja.vigencia)))[0]?.hoja;
+
+  if (!destino) {
+    avisos.push(`${contexto}: ninguna OM coincide con las hojas existentes del sistema; no se aplicó`);
+    return null;
+  }
+
+  const filaPorClave = new Map(
+    destino.filas.slice(1).map((f) => [claveOM(f[COL_LIMPIA.numero], f[COL_LIMPIA.oportunidad]), f]),
+  );
+  const grupoPorClave = new Map(grupos.map((g) => [g.clave, g]));
+
+  for (const g of grupos) {
+    if (!filaPorClave.has(g.clave)) {
+      avisos.push(`${contexto}: PM ${g.numero || "s/n"} no coincide con ninguna OM de «${destino.nombre}»; no se agregó`);
+    }
+  }
+  for (const [clave, fila] of filaPorClave) {
+    if (!grupoPorClave.has(clave)) {
+      avisos.push(`${contexto}: PM ${fila[COL_LIMPIA.numero] || "s/n"} de «${destino.nombre}» no aparece en la actualización; se conserva`);
+    }
+  }
+
+  // Los cortes con la misma fecha se emparejan por orden de aparición, porque
+  // un libro puede repetir una fecha (dos «30 ABRIL 2026»).
+  const existentes = cortesDeHojaLimpia(destino);
+  const usadosPorFecha = new Map();
+  const agregados = [];
+
+  for (const corte of cortes) {
+    const ocurrencia = usadosPorFecha.get(corte.fecha) ?? 0;
+    usadosPorFecha.set(corte.fecha, ocurrencia + 1);
+    const yaRegistrado = existentes.filter((e) => e.fecha === corte.fecha)[ocurrencia];
+
+    if (yaRegistrado) {
+      for (const [clave, fila] of filaPorClave) {
+        const g = grupoPorClave.get(clave);
+        if (!g) continue;
+        const observacion = valorUnico(g.grupo, corte.colObservacion);
+        const clasificacion = primerNumero(g.grupo, corte.colClasificacion);
+        const antes = fila[yaRegistrado.colClasificacion];
+        const difiereClasificacion = (antes ?? null) !== clasificacion;
+        if (difiereClasificacion || limpiar(fila[yaRegistrado.colObservacion]) !== observacion) {
+          avisos.push(
+            `${contexto}: PM ${g.numero} corte ${corte.fecha} difiere de lo registrado` +
+              (difiereClasificacion ? ` (clasificación ${antes ?? "vacía"} → ${clasificacion ?? "vacía"})` : " (texto de la observación)") +
+              "; no se aplicó",
+          );
+        }
+      }
+      continue;
+    }
+
+    destino.filas[0].push(`Observación ${corte.fecha} · ${corte.funcionario}`, `Clasificación ${corte.fecha}`);
+    for (const fila of destino.filas.slice(1)) {
+      const g = grupoPorClave.get(claveOM(fila[COL_LIMPIA.numero], fila[COL_LIMPIA.oportunidad]));
+      fila.push(g ? valorUnico(g.grupo, corte.colObservacion) : "", g ? primerNumero(g.grupo, corte.colClasificacion) : null);
+    }
+    agregados.push(corte.fecha);
+  }
+
+  return { destino: destino.nombre, agregados, oms: grupos.length };
 }
 
 function main() {
@@ -222,6 +349,9 @@ function main() {
 
   let totalHojas = 0;
   let totalRegistros = 0;
+
+  // 1. Base: un libro por sistema en `data/`.
+  const hojasPorSistema = new Map();
 
   for (const definicion of SISTEMAS) {
     const archivo = archivos.find((f) => definicion.patron.test(f));
@@ -253,6 +383,42 @@ function main() {
       avisos.push(`${definicion.sigla}: ninguna hoja con datos`);
       continue;
     }
+
+    hojasPorSistema.set(definicion.id, hojasLimpias);
+  }
+
+  // 2. Actualizaciones: `data/<dd-mm-aaaa>/*.xlsx`, en orden cronológico. Solo
+  //    agregan cortes nuevos sobre las hojas de la base.
+  for (const carpeta of carpetasDeActualizacion()) {
+    const libros = readdirSync(join(ORIGEN, carpeta.nombre)).filter(
+      (f) => f.toLowerCase().endsWith(".xlsx") && !f.startsWith("~$"),
+    );
+    for (const libro of libros) {
+      for (const hoja of leerLibro(join(ORIGEN, carpeta.nombre, libro))) {
+        const contexto = `Actualización ${carpeta.nombre} «${hoja.nombre}»`;
+        const definicion = SISTEMAS.find((s) => s.patronHoja.test(hoja.nombre));
+        const hojasSistema = definicion && hojasPorSistema.get(definicion.id);
+        if (!hojasSistema) {
+          avisos.push(`${contexto}: no corresponde a ningún sistema con datos base; omitida`);
+          continue;
+        }
+
+        const resultado = aplicarActualizacion(hoja, hojasSistema, avisos, contexto);
+        if (!resultado) continue;
+        console.log(
+          `↻ ${carpeta.nombre}/${libro} «${hoja.nombre}» → ${definicion.sigla} «${resultado.destino}»: ` +
+            (resultado.agregados.length > 0
+              ? `+${resultado.agregados.length} corte(s) [${resultado.agregados.join(", ")}]`
+              : "sin cortes nuevos"),
+        );
+      }
+    }
+  }
+
+  // 3. Escritura de los libros limpios.
+  for (const definicion of SISTEMAS) {
+    const hojasLimpias = hojasPorSistema.get(definicion.id);
+    if (!hojasLimpias) continue;
 
     const destino = join(DESTINO, `${definicion.id}.xlsx`);
     try {
@@ -289,6 +455,9 @@ function main() {
       "```",
       "",
       "Origen: los libros de [`../data/`](../data/), que son la fuente de verdad.",
+      "Sobre ellos se aplican, en orden cronológico, los libros de actualización de",
+      "las subcarpetas fechadas `../data/<dd-mm-aaaa>/`, que solo agregan los cortes",
+      "de seguimiento cuya fecha aún no estaba registrada.",
       "",
       "Cada archivo es un sistema de gestión, con una hoja por vigencia. Frente a",
       "los originales, aquí no hay celdas combinadas, filas vacías intercaladas,",
