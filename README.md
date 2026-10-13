@@ -1,4 +1,4 @@
-# Tableros de gestión — Universidad de Cundinamarca
+# Revisión por la Dirección · Sistemas Integrados de Gestión — Universidad de Cundinamarca
 
 Aplicación web para el **seguimiento a las Oportunidades de Mejora (OM)** derivadas de la
 **Revisión por la Dirección (RXD)** en los sistemas de gestión de la Universidad de Cundinamarca.

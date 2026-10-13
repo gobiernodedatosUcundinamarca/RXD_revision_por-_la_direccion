@@ -23,6 +23,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ### Corregido
 
+- **Título del sitio y vista previa al compartir el enlace.** El `<title>` y la descripción decían
+  "Tableros institucionales · Universidad de Cundinamarca" / "Portal de tableros de gestión…", que
+  es lo que mostraban Teams y otras apps al pegar la URL. Ahora el título es "Revisión por la
+  Dirección · Sistemas Integrados de Gestión", con una descripción del seguimiento a OM, y se
+  añaden metadatos `openGraph` y `twitter` (sitio: Universidad de Cundinamarca, `es_CO`). Las
+  páginas con título propio (p. ej. `/consolidado`) llevan el sufijo "· Revisión por la
+  Dirección" mediante `title.template`. El encabezado del README sigue el mismo nombre.
+
 - **"Integrado" se queda solo en las menciones plurales/colectivas** ("sistemas integrados de
   gestión de la Universidad", "Todos los sistemas integrados de gestión"), no en el nombre propio de
   cada sistema individual. Revierte el nombre de SGC/SGA/SGAS a "Sistema de Gestión de..." (sin
