@@ -29,7 +29,16 @@ calificaciones existentes, ni agregan o quitan OM. Ver
 
 | Carpeta | Libro | Aporte |
 |---|---|---|
-| `13-10-2026/` | `SISTEMAS INTEGRADOS DE GESTION.xlsx` | Corte **30-sep-2026** de la vigencia 2025 en SGC, SGA, SGSI y SGAS (SG-SST no trae cortes nuevos) |
+| `13-10-2026/` | `SISTEMAS INTEGRADOS DE GESTION.xlsx` | Corte **30-sep-2026** de la vigencia 2025 en los cinco sistemas. En SG-SST es la última columna de la hoja SST, rotulada por error «30 ABRIL 2026» |
+
+### Consolidado (derivado, no es fuente)
+
+[`data/consolidado/OM_RXD_consolidado.xlsx`](../data/consolidado/) reúne en un solo libro lo que
+muestra la web. Trae las hojas Léeme, Por sistema, Por vigencia, Por corte, OM, Seguimientos (con
+la observación **completa**, sin el recorte de 400 caracteres) y Escala. Todas las cifras son
+fórmulas con las mismas reglas de `src/lib/om/`, verificadas contra la web (0 diferencias al
+generarlo). Es un **producto derivado**: si cambian los datos, se regenera. El pipeline lo ignora,
+porque solo lee las subcarpetas cuyo nombre es una fecha.
 
 El sistema de cada hoja se reconoce por el nombre de la hoja (`SGC 2025`, `SST`, `SGSI`…) y la hoja
 base por coincidencia de OM (`PM N°` + texto de la oportunidad), así que la hoja no necesita llevar
@@ -115,7 +124,7 @@ pasos —sistemas, áreas, normalización de fechas— viven en
 | Fecha como `30/06/2026`, `30 de junio 2026`, `Abril 30 de 2026`, `30 SEP 2026` | Se convierte a ISO (acepta nombres de mes completos y abreviados) |
 | Fecha como texto libre (`Inmediato`, `IPA 2025`, `Vigencia 2024`) | `fechaEntrega: null`; se conserva el texto original en `fechaEntregaTexto` y es lo que muestra la interfaz |
 | Corte cuya fecha no se puede interpretar | Se descarta con aviso, para garantizar que **todo seguimiento tenga fecha** |
-| Corte con fecha mal digitada, declarado en `CORTES_DESCARTADOS` ([`dominio.mjs`](../scripts/lib/dominio.mjs)) | Se descarta con aviso, solo si está fuera de orden cronológico. Hoy: los dos cortes «30 DE DICIEMBRE 2026» de SGSI 2025, que no corresponden a esa fecha; su corte vigente es el 30-sep-2026 |
+| Columna de corte mal rotulada, declarada en `CORTES_DESCARTADOS` o `CORTES_CORREGIDOS` ([`dominio.mjs`](../scripts/lib/dominio.mjs)) | Se descarta o se le corrige la fecha, con aviso. Hoy: **SGSI 2025**, los dos cortes «30 DE DICIEMBRE 2026» se descartan (fuera de orden; no corresponden a esa fecha). **SG-SST 2025**, la última columna de la hoja SST del libro 13-10-2026 dice «30 ABRIL 2026» y es el corte del 30-sep-2026; reemplaza a la segunda columna «30 ABRIL 2026» del libro de junio |
 | Observaciones muy largas | Se recortan a 400 caracteres; el texto íntegro permanece en los libros de `data/` |
 | Libro de actualización (`data/<dd-mm-aaaa>/`) con un corte cuya fecha ya existe | No se aplica; si su contenido difiere de lo registrado, se avisa por consola |
 | Libro de actualización con un corte de fecha nueva | Se agrega a la hoja base de la misma vigencia, para las OM que coinciden |
@@ -235,16 +244,29 @@ disponible en Datos/Seguimiento con su propia marca «Sin calificar» por observ
 Promedia **todas** las OM del conjunto: una OM nunca calificada suma 0 al promedio, igual que una
 calificada explícitamente con 0.
 
-### Serie temporal — lectura acumulada
+### Evolución — por seguimiento y por vigencia
 
-`serieAvancePorCorte` calcula cada punto **como una foto del portafolio a esa fecha**: para cada OM
-toma su última calificación *en ese corte o antes* (`clasificacionEnCorte`), no solo lo que se
-calificó ese día.
+Las gráficas de evolución (Resumen, Seguimiento e Indicadores) usan `seriesPorSeguimiento`: **una
+serie por vigencia** y, en cada corte, **solo las OM evaluadas ese día** (`calificacionDelCorte`).
+Cada línea reproduce la fila de promedios de la hoja de esa vigencia en el libro de seguimiento. Por
+ejemplo, SGSI 2025: 37,5 % (abr-2026) → 68,75 % (jun-2026) → 87,5 % (sep-2026, 4 OM evaluadas).
 
-La alternativa —promediar únicamente lo calificado en el corte— describiría el ritmo de trabajo del
-evaluador, no el avance del portafolio. Cada punto viaja con su `base` (cuántas OM lo sustentan) y
-el tooltip la declara, porque **la población cambia**: cuando entra una vigencia nueva el promedio
-puede bajar sin que ninguna OM haya retrocedido. La vista Seguimiento lo advierte.
+Se separa por vigencia porque cada ciclo se evalúa en fechas propias. Mezclarlos en una sola línea
+haría subir o bajar el promedio por **cambiar el grupo evaluado** (SGSI: 14 OM en junio, 4 en
+septiembre), no por avance real. Cada punto declara cuántas OM se evaluaron y cuántas quedaron
+cumplidas. Si un libro repite la fecha de un corte, vale la columna más reciente. Decisión en
+[ADR-0007](adr/0007-evolucion-por-seguimiento.md).
+
+Los **hitos** de la vista Seguimiento siguen la misma regla: cada corte cuenta solo lo evaluado ese
+día, y su variación compara **esas mismas OM** con su calificación anterior.
+
+### Variación de los KPI — lectura acumulada
+
+Los KPI (tasa de cierre, avance promedio) describen el **estado vigente** de cada OM. Por eso su
+variación «vs corte anterior» usa `serieAvancePorCorte`, que toma para cada OM su última
+calificación *en ese corte o antes* (`clasificacionEnCorte`). Así compara el estado vigente de las
+mismas OM en dos fechas, igual que el valor del KPI. Lo mismo aplica a la variación de la tabla
+comparativa de `/consolidado`.
 
 ### Vencimiento
 

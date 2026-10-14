@@ -3,7 +3,66 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versionado según
 [SemVer](https://semver.org/lang/es/).
 
+## [Sin publicar] — 2026-10-14
+
+### Datos
+
+- **Libro consolidado** `data/consolidado/OM_RXD_consolidado.xlsx`, coherente con la web. Trae las
+  hojas Por sistema, Por vigencia, Por corte, OM (162), Seguimientos (1 012, con la observación
+  completa), Escala y Léeme. Las cifras son fórmulas; al generarlo se evaluaron y se compararon con
+  la lógica de `src/lib/om/`, con 0 errores y 0 diferencias.
+
+- **SG-SST 2025: corte del 30-sep-2026.** La última columna de la hoja SST del libro
+  `13-10-2026` decía «30 ABRIL 2026», pero es el corte del 30-sep-2026: se le corrige la fecha
+  (`CORTES_CORREGIDOS`). Reemplaza a la segunda columna «30 ABRIL 2026» de SG SST 2025 del libro
+  de junio, que se descarta (`CORTES_DESCARTADOS`). La PM 1 pasa a 1 al 30-sep. La PM 7, que no
+  está en el libro nuevo, pierde el 1,5 de esa columna y queda en 0 (su calificación de abril).
+  SG-SST 2025: 71,4 % (30-abr, 7 OM) → 91,7 % (30-sep, 6 OM). Solo cambia SG-SST 2025 (verificado).
+  Registros de seguimiento: 1 013 → 1 012.
+
+### Añadido
+
+- **Ícono «!» con cómo se calcula cada cifra** (`AyudaCalculo`). Está en los KPI de todos los
+  tableros y del consolidado, en cada gráfica (prop `calculo` de `ChartCard`), en los encabezados
+  de las tablas (Consolidado, Responsables, Datos), en cada indicador, en los cortes de Seguimiento
+  y en la portada. Se abre con mouse, teclado o toque. Los textos viven una sola vez en
+  `src/lib/om/explicaciones.ts`. La fórmula de los KPI, antes siempre visible, pasa al ícono.
+
+### Corregido
+
+- **Indicador «vigencias anteriores aún sin cerrar»:** tomaba como vigencia actual la más reciente
+  del conjunto **filtrado**. Al filtrar por una vigencia antigua daba 0 aunque hubiera OM sin
+  cerrar. Ahora usa la vigencia más reciente del sistema.
+- **Vencimiento coherente entre vistas:** el indicador de vencidas usaba el último corte del
+  conjunto filtrado y la tabla de Datos el del sistema. Ahora ambos usan el del sistema, así que un
+  filtro no cambia si una OM está vencida. Con los datos actuales no cambia ningún conteo.
+- El indicador «Cortes de seguimiento registrados» muestra las fechas formateadas
+  (`23 abr 2024`), no en formato ISO.
+- **Títulos coherentes con lo que muestran:**
+  - La tabla del consolidado pasa de «Última medición de cada sistema» a «Estado vigente de cada
+    sistema»: muestra la última calificación de todas las OM, no solo el último corte.
+  - Los KPI pasan a «Tasa de cierre vigente» y «Avance promedio vigente» (y «… global vigente» en el
+    consolidado), para distinguirlos del avance por corte de la gráfica de evolución.
+  - «Último reporte de seguimiento» pasa a «Última observación de la OM más rezagada».
+  - El título de Responsables dice el número real de responsables graficados. Antes decía siempre
+    «12 con mayor carga», aunque SGAS tiene 1, y SGA y SGSI 11.
+  - El donut aclara que cuenta OM según su última calificación.
+  - La gráfica de Responsables muestra «Filtrada» también con los filtros generales.
+
 ## [Sin publicar] — 2026-10-13
+
+### Cambiado
+
+- **Evolución por seguimiento y por vigencia**
+  ([ADR-0007](docs/adr/0007-evolucion-por-seguimiento.md)). Las gráficas de evolución de Resumen,
+  Seguimiento e Indicadores muestran una línea por vigencia y, en cada corte, **solo las OM
+  evaluadas ese día**. Antes había una sola línea acumulada que arrastraba la última calificación de
+  todas las OM. Ahora cada línea coincide con la fila de promedios de su hoja en el libro: SGSI 2025
+  da 37,5 % → 68,75 % → 87,5 %, y el corte de septiembre cuenta 4 OM evaluadas, no 14. Los hitos de
+  Seguimiento cuentan solo lo evaluado en el corte, y su variación compara esas mismas OM con su
+  calificación anterior. El valor y la variación de los KPI no cambian (estado vigente).
+- Nuevo componente `EvolucionPorVigencia`, con leyenda que filtra por vigencia. Reemplaza a
+  `TrendLineChart`, que se elimina.
 
 ### Añadido
 
