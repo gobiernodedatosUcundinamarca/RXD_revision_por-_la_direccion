@@ -69,6 +69,11 @@ const nextConfig: NextConfig = {
   // No revelar la versión de Next.js en la cabecera `X-Powered-By`.
   poweredByHeader: false,
 
+  // Desde 16.4, `next dev` crea AGENTS.md cuando corre bajo un agente de IA.
+  // Claude Code no lo lee si existe .claude/CLAUDE.md, que ya recoge su
+  // indicación (§2): solo ensuciaría el árbol de trabajo.
+  agentRules: false,
+
   // Cabeceras de seguridad en todas las rutas (CLAUDE.md §2).
   async headers() {
     return [{ source: "/:path*", headers: cabecerasSeguridad }];

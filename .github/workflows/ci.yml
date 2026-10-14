@@ -18,18 +18,19 @@ jobs:
 
     steps:
       - name: Descargar el repositorio
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Instalar pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
           # Usa la versión declarada en package.json -> "packageManager".
           run_install: false
 
       - name: Instalar Node.js LTS
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: 20
+          # Misma versión que en local: la LTS fijada en .nvmrc.
+          node-version-file: .nvmrc
           cache: pnpm
 
       - name: Instalar dependencias (lockfile congelado)

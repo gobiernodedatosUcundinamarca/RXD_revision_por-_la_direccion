@@ -58,6 +58,25 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
   y en la portada. Se abre con mouse, teclado o toque. Los textos viven una sola vez en
   `src/lib/om/explicaciones.ts`. La fórmula de los KPI, antes siempre visible, pasa al ícono.
 
+### Seguridad
+
+- **Node.js 24 LTS** fijado en `.nvmrc` y en CI (`node-version-file`); la CI usaba Node 20, sin
+  soporte desde abril de 2026. `engines`: Node ≥ 24, pnpm ≥ 12.
+- **pnpm 11.1.2 → 12.11.2**. Next.js 16.2.11 → 16.4.0, React 19.2.4 → 19.3.0, Playwright 1.62 →
+  1.64, `@types/node` 20 → 24. Next 16.4.1 aún no entra por la edad mínima de publicación de pnpm.
+- **ESLint 9 → 10**: la 9 está sin soporte desde el 2026-08-06. Los plugins de
+  `eslint-config-next` aún declaran `<=9`; se acepta con `peerDependencyRules` tras verificar que
+  siguen detectando errores.
+- **TypeScript 5.9 → 6.0.3**, no 7: typescript-eslint solo soporta `<6.1`.
+- Actions de CI: `checkout` v4 → v7, `setup-node` v4 → v7, `pnpm/action-setup` v4 → v6.
+- Overrides nuevos o más estrictos para transitivas vulnerables: `sharp ≥ 0.35.5`,
+  `source-map-js ≥ 1.2.2`, `brace-expansion` 1.1.21 y 5.0.12. Se ignora GHSA-vfj7-8cjw-p6xm
+  (`braces`, sin parche publicado, solo en el lint) con justificación en `pnpm-workspace.yaml`.
+  `pnpm audit`: 10 avisos (8 altos) → 0 sin revisar. Lint, typecheck, build y 25 pruebas e2e en
+  verde.
+- `agentRules: false` en `next.config.ts`: Next 16.4 crea `AGENTS.md` en cada `next dev` bajo un
+  agente de IA; su indicación (consultar `node_modules/next/dist/docs/`) pasa al CLAUDE.md §2.
+
 ### Corregido
 
 - **Indicador «vigencias anteriores aún sin cerrar»:** tomaba como vigencia actual la más reciente

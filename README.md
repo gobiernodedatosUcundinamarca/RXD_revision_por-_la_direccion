@@ -40,8 +40,8 @@ de la portada.
 
 ## Requisitos
 
-- **Node.js LTS** (20 o 22)
-- **pnpm** (habilitar con `corepack enable`)
+- **Node.js LTS** — la versión de [`.nvmrc`](.nvmrc) (`nvm use`); `engines` exige ≥ 24
+- **pnpm** — la versión de `packageManager` en `package.json` (habilitar con `corepack enable`)
 
 ## Instalación y arranque
 

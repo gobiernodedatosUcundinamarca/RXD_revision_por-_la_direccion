@@ -16,9 +16,11 @@ Dos layouts ([regla de layouts](rules/REGLA_GENERAL_LAYOUTS_APLICACION.md)): **p
 
 ## 2. Stack y seguridad
 
-Next.js (App Router) · React · TypeScript `strict` · Tailwind + tokens institucionales · Recharts · Playwright · Node LTS. Versiones exactas: [`package.json`](../package.json).
+Next.js (App Router) · React · TypeScript `strict` · Tailwind + tokens institucionales · Recharts · Playwright · Node LTS ([`.nvmrc`](../.nvmrc), también en CI). Versiones exactas: [`package.json`](../package.json).
 
 - **Regla dura: pnpm, Next.js (framework) y React siempre en su última versión estable y con soporte de seguridad**; lo mismo para el resto de dependencias. Antes de fijar o subir versiones: `pnpm outdated` y `pnpm audit`, revisando breaking changes. No fusionar con vulnerabilidades altas/críticas (CI lo verifica).
+- **Excepciones vigentes** (documentadas en [`pnpm-workspace.yaml`](../pnpm-workspace.yaml)): TypeScript en la última **6.x** porque typescript-eslint aún no soporta la 7; ESLint 10 aceptado aunque los plugins de `eslint-config-next` declaren `<=9` (la 9 está sin soporte); `overrides` de transitivas vulnerables y avisos sin parche ignorados con justificación. pnpm respeta una edad mínima de publicación: la versión instalable puede ir un parche por detrás de `latest`. Revisarlas en cada `pnpm outdated`.
+- Next.js 16.x puede diferir de lo aprendido: ante la duda sobre una API o convención, consultar `node_modules/next/dist/docs/` y atender los avisos de deprecación.
 - Sin secretos en el cliente (nada de `NEXT_PUBLIC_` salvo dato público). Cabeceras de seguridad en `next.config.ts`; validar entrada en toda frontera. Preferir Server Components.
 
 ## 3. Gestor de paquetes: SOLO pnpm
