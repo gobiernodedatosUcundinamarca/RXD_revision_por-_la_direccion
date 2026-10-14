@@ -1,3 +1,11 @@
+---
+paths:
+  - "src/app/globals.css"
+  - "src/app/layout.tsx"
+  - "src/components/brand/**"
+  - "public/brand/**"
+---
+
 # Reglas visuales — UCundinamarca
 
 Alcance **cerrado**: colores, logotipo/imagotipo/escudo y tipografía. Nada de navegación, gráficas ni lógica. Referencia: **Manual de Imagen Institucional ECOM002 v18**.

@@ -1,3 +1,12 @@
+---
+paths:
+  - "src/app/**/page.tsx"
+  - "src/app/**/_components/**"
+  - "src/app/**/_lib/**"
+  - "src/components/**"
+  - "src/features/**"
+---
+
 # Regla de scaffolding y organización por vistas
 
 ## 1. Propósito

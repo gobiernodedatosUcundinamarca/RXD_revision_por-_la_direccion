@@ -1,3 +1,10 @@
+---
+paths:
+  - "docs/**"
+  - "README.md"
+  - "CHANGELOG.md"
+---
+
 # Regla de documentación y su actualización
 
 ## 1. Propósito
@@ -14,7 +21,7 @@ En el repo, en Markdown y español; se actualiza **en el mismo cambio**; **una f
 |---|---|
 | `README.md` | Qué es, requisitos, arranque con pnpm, scripts, enlaces. Público. |
 | `.claude/CLAUDE.md` | Guía maestra **mínima** para Claude (se carga en cada sesión). |
-| `.claude/reglas/` | Reglas de diseño, organización y proceso. |
+| `.claude/rules/` | Reglas de diseño, organización y proceso. |
 | `docs/arquitectura.md` · `docs/datos.md` · `docs/componentes.md` | Capas y flujo · modelo y métricas · catálogo de componentes. |
 | `docs/adr/NNNN-*.md` | Decisiones técnicas (inmutables). |
 | `CHANGELOG.md` | Historial (Keep a Changelog + SemVer). |
@@ -26,7 +33,7 @@ La de la tabla anterior; un documento nuevo se agrega solo si no encaja en uno e
 
 ## 5. README
 
-Descripción, stack, requisitos (Node LTS, Corepack, pnpm), arranque solo con pnpm, scripts, estructura resumida y enlaces a `docs/`, `.claude/reglas/` y `.claude/CLAUDE.md`. No duplica el CLAUDE.md.
+Descripción, stack, requisitos (Node LTS, Corepack, pnpm), arranque solo con pnpm, scripts, estructura resumida y enlaces a `docs/`, `.claude/rules/` y `.claude/CLAUDE.md`. No duplica el CLAUDE.md.
 
 ## 6. Código
 

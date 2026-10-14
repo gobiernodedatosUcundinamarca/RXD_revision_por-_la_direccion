@@ -2,7 +2,7 @@
 
 Componentes **generales** (reutilizables o transversales). Lo específico de una vista vive en el
 `_components/` de esa vista y se promueve aquí solo cuando una segunda vista lo necesita
-([regla de scaffolding](../.claude/reglas/REGLA_SCAFFOLDING_ORGANIZACION_POR_VISTAS.md) §5).
+([regla de scaffolding](../.claude/rules/REGLA_SCAFFOLDING_ORGANIZACION_POR_VISTAS.md) §5).
 
 Cada componente lleva su TSDoc con props y ejemplo de uso; aquí se documenta el **para qué**.
 

@@ -1,8 +1,16 @@
+---
+paths:
+  - ".claude/**"
+  - "package.json"
+  - "pnpm-workspace.yaml"
+  - "docs/adr/**"
+---
+
 # Regla de mantenimiento de reglas
 
 ## 1. Propósito
 
-Que `.claude/CLAUDE.md` y `.claude/reglas/` **describan siempre el proyecto real** y sigan siendo **cortos**: se leen en cada sesión y cada línea cuesta tokens.
+Que `.claude/CLAUDE.md` y `.claude/rules/` **describan siempre el proyecto real** y sigan siendo **cortos**: se leen en cada sesión y cada línea cuesta tokens.
 
 ## 2. Cambio sustancial (disparador)
 
@@ -40,8 +48,10 @@ Al acercarse al límite se **condensa**: viñetas en vez de prosa, tablas para d
 
 - Una regla = **un ámbito**; si se solapa con otra, se enlaza.
 - Solo lo que **no se deduce del código**: decisiones, prohibiciones, criterios. Valores que viven en el código (tokens, versiones, rutas) se **enlazan**, no se copian.
-- Nombre `REGLA_<AMBITO>.md`, secciones numeradas `## N.`, cierre con **Instrucción para Claude** y/o **Criterios de aceptación**.
-- Toda regla nueva se agrega a la tabla §8 del CLAUDE.md con su "leer antes de…".
+- Vive en `.claude/rules/`, nombre `REGLA_<AMBITO>.md`, secciones numeradas `## N.`, cierre con **Instrucción para Claude** y/o **Criterios de aceptación**.
+- Lleva frontmatter **`paths:`** con los globs de los archivos de su ámbito, para cargarse solo cuando se tocan. Sin `paths` se carga en **cada sesión**: reservarlo para lo imprescindible y breve. En los globs, `[temaId]` es una clase de caracteres: usar `*` (`src/app/temas/*/layout.tsx`).
+- Un procedimiento de varios pasos que se repite no es una regla: es una **skill** (`.claude/skills/<nombre>/SKILL.md`).
+- Toda regla nueva se agrega a la tabla §8 del CLAUDE.md.
 
 ## 6. Numeración estable
 

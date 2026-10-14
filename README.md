@@ -132,4 +132,4 @@ docs/                  Arquitectura, datos, componentes y ADR
 - [Arquitectura](docs/arquitectura.md) ([diagrama interactivo](docs/arquitectura-visual.html)) · [Datos](docs/datos.md) · [Componentes](docs/componentes.md)
 - [Decisiones arquitectónicas (ADR)](docs/adr/)
 - [Historial de cambios](CHANGELOG.md)
-- Reglas de diseño y organización: [`.claude/reglas/`](.claude/reglas/)
+- Reglas de diseño y organización: [`.claude/rules/`](.claude/rules/)

@@ -1,3 +1,12 @@
+---
+paths:
+  - "src/components/charts/**"
+  - "src/components/dashboard/**"
+  - "src/features/dashboard/**"
+  - "src/lib/om/avance.ts"
+  - "src/app/**/_components/**"
+---
+
 # Regla de diseño para vistas de dashboard
 
 > **Obligatorio:** leer completa antes de crear o modificar cualquier gráfica, `ChartCard` o vista que integre una. Ante la duda sobre un criterio, se relee la sección.

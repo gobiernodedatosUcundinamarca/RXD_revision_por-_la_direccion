@@ -41,7 +41,7 @@ una API, a Power BI o a una base de datos solo exige reescribir `src/lib/om/data
 
 ## 2. Rutas y layouts
 
-Los dos layouts de la [regla de layouts](../.claude/reglas/REGLA_GENERAL_LAYOUTS_APLICACION.md) se
+Los dos layouts de la [regla de layouts](../.claude/rules/REGLA_GENERAL_LAYOUTS_APLICACION.md) se
 implementan con layouts anidados del App Router:
 
 ```
@@ -72,7 +72,7 @@ portada, tiene su propio filtro de vigencia y se alcanza desde la portada y desd
 cualquier tablero.
 
 Cada vista es una **carpeta física independiente** con su `page.tsx` y su `_components/`, según la
-[regla de scaffolding](../.claude/reglas/REGLA_SCAFFOLDING_ORGANIZACION_POR_VISTAS.md) §4. No existe
+[regla de scaffolding](../.claude/rules/REGLA_SCAFFOLDING_ORGANIZACION_POR_VISTAS.md) §4. No existe
 un parámetro dinámico `[vista]` que resuelva varias vistas con condicionales.
 
 `VistaShell` envuelve toda página del layout interno: valida el tema, arma el encabezado con el

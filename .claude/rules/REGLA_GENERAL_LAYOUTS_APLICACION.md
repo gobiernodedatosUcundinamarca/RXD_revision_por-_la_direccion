@@ -1,3 +1,12 @@
+---
+paths:
+  - "src/components/layout/**"
+  - "src/app/temas/page.tsx"
+  - "src/app/temas/*/layout.tsx"
+  - "src/app/consolidado/page.tsx"
+  - "src/features/temas/**"
+---
+
 # Regla general de layouts de la aplicación
 
 ## 1. Propósito

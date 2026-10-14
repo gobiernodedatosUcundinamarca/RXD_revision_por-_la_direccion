@@ -30,7 +30,17 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
   marca pasa a la regla visual §2.7. Se explicita que pnpm, Next.js y React van siempre en su
   última versión estable y segura.
 
+- **Las reglas pasan de `.claude/reglas/` a `.claude/rules/`** con frontmatter `paths:`: Claude
+  Code las carga solas y solo al leer o editar archivos de su ámbito, en lugar de depender de que
+  alguien las lea (y sin gastar contexto el resto del tiempo). La de control de versiones se carga
+  siempre.
+
 ### Añadido
+
+- **Hook `Stop` `.claude/hooks/recordar-reglas.mjs`**: si quedó un cambio sustancial (dependencias,
+  estructura de `src/`, ADR, ETL, métricas, CI) sin tocar las reglas, le pide a Claude revisarlas
+  antes de cerrar. Avisa una sola vez por conjunto de cambios y también mira los commits hechos
+  desde la última revisión.
 
 - **Regla de mantenimiento de reglas** (`.claude/reglas/REGLA_MANTENIMIENTO_DE_REGLAS.md`): ante un
   cambio sustancial se revisan y actualizan las reglas (o se propone una nueva), con límites de

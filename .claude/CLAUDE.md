@@ -1,7 +1,7 @@
 # CLAUDE.md
 
 > **Idioma:** español en respuestas, documentación y nombres (identificadores de código en inglés técnico cuando aporte claridad).
-> Este archivo se carga en cada sesión: **solo lo esencial**. El detalle vive en [`reglas/`](reglas/) y [`../docs/`](../docs/) — leer la regla que corresponda antes de tocar su ámbito (§8).
+> Este archivo se carga en cada sesión: **solo lo esencial**. El detalle vive en [`rules/`](rules/) (se cargan solas según los archivos que se tocan, §8) y [`../docs/`](../docs/).
 
 ## 1. Qué es
 
@@ -12,7 +12,7 @@ Frontend web (Next.js) de la **Universidad de Cundinamarca** para el seguimiento
 - **Estado vigente** = última calificación; las anteriores son historial.
 - Fuente de verdad: libros de [`data/`](../data/) → `pnpm datos:importar` → `src/data/om-rxd.json`. Modelo y métricas: [`docs/datos.md`](../docs/datos.md).
 
-Dos layouts ([regla de layouts](reglas/REGLA_GENERAL_LAYOUTS_APLICACION.md)): **portada** `/temas` y **layout interno** `/temas/:temaId/:vista`. Además, `/consolidado` (comparación **entre** sistemas, ruta de primer nivel).
+Dos layouts ([regla de layouts](rules/REGLA_GENERAL_LAYOUTS_APLICACION.md)): **portada** `/temas` y **layout interno** `/temas/:temaId/:vista`. Además, `/consolidado` (comparación **entre** sistemas, ruta de primer nivel).
 
 ## 2. Stack y seguridad
 
@@ -55,12 +55,12 @@ src/app/
 
 `components/{ui,brand,layout,dashboard,charts}` (general) · `features/{temas,dashboard}` · `lib/om/` (datos y métricas) · `types/` · `scripts/` (ETL).
 
-- **Específico de una vista → `_components/` de esa vista. Usado en 2+ vistas → se *mueve* a `components/`** (nunca se copia). Detalle: [regla de scaffolding](reglas/REGLA_SCAFFOLDING_ORGANIZACION_POR_VISTAS.md).
+- **Específico de una vista → `_components/` de esa vista. Usado en 2+ vistas → se *mueve* a `components/`** (nunca se copia). Detalle: [regla de scaffolding](rules/REGLA_SCAFFOLDING_ORGANIZACION_POR_VISTAS.md).
 - **Capa de datos:** la UI depende de `src/lib/om/` y `useTableroOM`, nunca del JSON ni de un `fetch`. Cambiar la fuente solo toca `src/lib/om/dataset.ts` ([ADR-0001](../docs/adr/0001-fuente-de-datos-etl-excel-a-json.md)).
 
 ### 5.3 Gráficas
 
-**Antes de crear o modificar una gráfica, leer completa la [regla de dashboard](reglas/regla_diseno_dashboard.md).**
+**Antes de crear o modificar una gráfica, leer completa la [regla de dashboard](rules/regla_diseno_dashboard.md).**
 
 - Toda gráfica va dentro de **`ChartCard`** (título, ejes/tooltip, leyenda, responsive, estados Cargando/Sin datos/Error/Filtrada/Seleccionada, filtro).
 - Filtros en `features/dashboard/FiltrosProvider` (montado en el layout del tema): la selección sincroniza todo y persiste entre vistas.
@@ -77,26 +77,30 @@ Catálogo: [`docs/componentes.md`](../docs/componentes.md).
 
 ## 7. Identidad visual
 
-Reglas completas y mapeo de recursos (`.claude/lmagenes/`, `imagenes/` → `public/brand/`): [regla visual](reglas/REGLAS_VISUALES_UCUNDINAMARCA.md). Lo imprescindible:
+Reglas completas y mapeo de recursos (`.claude/lmagenes/`, `imagenes/` → `public/brand/`): [regla visual](rules/REGLAS_VISUALES_UCUNDINAMARCA.md). Lo imprescindible:
 
 - Logo **solo** con `LogoUcundinamarca`; logos de sistema **solo** con `LogoSistema` (≥ 58 px de alto). Nunca `<img>` suelto.
 - Identificador principal: **imagotipo horizontal**; el **escudo** no es logo operativo (solo favicon/simbólico).
 - Predominio `--uc-green` / `--uc-green-dark`; amarillo/oro para énfasis; máx. 1 principal + 2 complementarios por vista; solo los 4 degradados oficiales.
 - Tipografía **Montserrat** (`next/font/google`); **prohibido Inter** como principal.
 
-## 8. Reglas — cuándo leer cada una
+## 8. Reglas, hooks y skills
 
-| Regla | Leer antes de… |
+Las reglas de [`rules/`](rules/) llevan frontmatter `paths:` y Claude Code las carga **solo al leer o editar un archivo que coincide**; la de control de versiones no lleva `paths` y se carga siempre. Si el trabajo cae en un ámbito sin haber tocado sus archivos (p. ej. diseñar una gráfica nueva), leer la regla a mano.
+
+| Regla | Ámbito |
 |---|---|
-| [Visual](reglas/REGLAS_VISUALES_UCUNDINAMARCA.md) | tocar color, logo, tipografía o `public/brand/` |
-| [Dashboard](reglas/regla_diseno_dashboard.md) | crear/modificar gráficas, KPIs o filtros |
-| [Layouts](reglas/REGLA_GENERAL_LAYOUTS_APLICACION.md) | tocar portada, Sidebar, encabezado o navegación |
-| [Scaffolding](reglas/REGLA_SCAFFOLDING_ORGANIZACION_POR_VISTAS.md) | crear vistas o decidir dónde vive un componente |
-| [Documentación](reglas/REGLA_DOCUMENTACION_Y_ACTUALIZACION.md) | cerrar cualquier cambio (docs en el mismo cambio) |
-| [Control de versiones](reglas/REGLA_CONTROL_DE_VERSIONES.md) | `git commit`, `push` o cualquier operación sobre el historial |
-| [Mantenimiento de reglas](reglas/REGLA_MANTENIMIENTO_DE_REGLAS.md) | cerrar un **cambio sustancial** (ver abajo) |
+| [Visual](rules/REGLAS_VISUALES_UCUNDINAMARCA.md) | color, logo, tipografía, `public/brand/` |
+| [Dashboard](rules/regla_diseno_dashboard.md) | gráficas, KPIs, filtros |
+| [Layouts](rules/REGLA_GENERAL_LAYOUTS_APLICACION.md) | portada, Sidebar, encabezado, navegación |
+| [Scaffolding](rules/REGLA_SCAFFOLDING_ORGANIZACION_POR_VISTAS.md) | vistas y ubicación de componentes |
+| [Documentación](rules/REGLA_DOCUMENTACION_Y_ACTUALIZACION.md) | README, `docs/`, ADR, CHANGELOG |
+| [Control de versiones](rules/REGLA_CONTROL_DE_VERSIONES.md) | commits, push, historial (siempre cargada) |
+| [Mantenimiento de reglas](rules/REGLA_MANTENIMIENTO_DE_REGLAS.md) | `.claude/`, dependencias, ADR |
 
-**Cambio sustancial** (nueva vista/ruta, dependencia o librería, fuente de datos, estructura de carpetas, ADR, convención repetida o algo que contradiga una regla): al terminar, **revisar si alguna regla o este archivo quedó desactualizado y proponer la actualización o una regla nueva**. Las secciones `§N` se citan desde el código: no renumerar sin actualizar las citas.
+**Cambio sustancial** (nueva vista/ruta, dependencia o librería, fuente de datos, estructura de carpetas, ADR, convención repetida o algo que contradiga una regla): al terminar, **revisar si alguna regla o este archivo quedó desactualizado y proponer la actualización o una regla nueva**. Lo recuerda el hook `Stop` [`hooks/recordar-reglas.mjs`](hooks/recordar-reglas.mjs). Las secciones `§N` se citan desde el código: no renumerar sin actualizar las citas.
+
+**Skills del proyecto:** [`/importar-datos`](skills/importar-datos/SKILL.md) — actualizar los datos desde un libro nuevo de `data/`.
 
 ## 9. Checklist de cierre
 

@@ -9,7 +9,7 @@ institución mantiene manualmente en [`data/`](../../data/). Son hojas heterogé
 de columnas de seguimiento, encabezados con el nombre del evaluador incrustado, fechas en cuatro
 formatos distintos, hojas duplicadas y filas de totales.
 
-La aplicación necesita un modelo estable y tipado, y la [regla de layouts](../../.claude/reglas/REGLA_GENERAL_LAYOUTS_APLICACION.md)
+La aplicación necesita un modelo estable y tipado, y la [regla de layouts](../../.claude/rules/REGLA_GENERAL_LAYOUTS_APLICACION.md)
 junto con CLAUDE.md §6 exigen que la interfaz dependa de una **abstracción** de datos y no de un
 origen concreto.
 
