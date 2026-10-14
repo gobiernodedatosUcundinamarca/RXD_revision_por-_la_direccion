@@ -20,7 +20,21 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
   SG-SST 2025: 71,4 % (30-abr, 7 OM) → 91,7 % (30-sep, 6 OM). Solo cambia SG-SST 2025 (verificado).
   Registros de seguimiento: 1 013 → 1 012.
 
+### Cambiado
+
+- **`CLAUDE.md` pasa a `.claude/CLAUDE.md`** y se condensa de 21,5 KB a ~9 KB (se carga en cada
+  sesión). Las reglas de `.claude/reglas/` se condensan de ~60 KB a ~30 KB conservando la
+  numeración `§N` que cita el código, y se corrigen datos obsoletos: logo institucional en la
+  cabecera del menú lateral (la esquina superior derecha es del logo del sistema), vista
+  `responsables/` en lugar de `reportes/`, estructura real de `docs/`. El mapeo de recursos de
+  marca pasa a la regla visual §2.7. Se explicita que pnpm, Next.js y React van siempre en su
+  última versión estable y segura.
+
 ### Añadido
+
+- **Regla de mantenimiento de reglas** (`.claude/reglas/REGLA_MANTENIMIENTO_DE_REGLAS.md`): ante un
+  cambio sustancial se revisan y actualizan las reglas (o se propone una nueva), con límites de
+  tamaño y numeración estable.
 
 - **Ícono «!» con cómo se calcula cada cifra** (`AyudaCalculo`). Está en los KPI de todos los
   tableros y del consolidado, en cada gráfica (prop `calculo` de `ChartCard`), en los encabezados

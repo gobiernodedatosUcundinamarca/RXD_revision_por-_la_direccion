@@ -5,8 +5,8 @@
       "Bash(corepack:*)"
     ],
     "ask": [
-      "Edit(CLAUDE.md)",
-      "Write(CLAUDE.md)",
+      "Edit(.claude/CLAUDE.md)",
+      "Write(.claude/CLAUDE.md)",
       "Edit(.claude/reglas/**)",
       "Write(.claude/reglas/**)",
       "Bash(git push:*)",
