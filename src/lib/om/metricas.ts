@@ -47,8 +47,12 @@ export function estaVencida(om: OportunidadMejora, referencia: string | null): b
   return om.fechaEntrega < referencia && estadoDeOM(om) !== "cumplida";
 }
 
-export function resumen(oms: OportunidadMejora[]): ResumenOM {
-  const referencia = ultimoCorte(oms);
+/**
+ * @param referencia Fecha contra la que se evalúa el vencimiento. Por defecto,
+ *   el último corte del propio conjunto; con filtros activos conviene pasar el
+ *   del sistema completo para que el filtro no cambie si una OM está vencida.
+ */
+export function resumen(oms: OportunidadMejora[], referencia: string | null = ultimoCorte(oms)): ResumenOM {
   const estados = oms.map(estadoDeOM);
   const cuenta = (predicado: (estado: EstadoAvance) => boolean) => estados.filter(predicado).length;
   const cumplidas = cuenta((estado) => estado === "cumplida");
@@ -66,7 +70,7 @@ export function resumen(oms: OportunidadMejora[]): ResumenOM {
     sinFechaEvaluable: oms.filter((om) => !om.fechaEntrega).length,
     vigencias: [...new Set(oms.map((om) => om.vigencia))].sort(),
     cortes: cortesDe(oms),
-    ultimoCorte: referencia,
+    ultimoCorte: ultimoCorte(oms),
   };
 }
 
@@ -103,12 +107,13 @@ export interface PuntoAvance {
 }
 
 /**
- * Evolución del estado del portafolio corte a corte.
+ * Estado vigente del portafolio corte a corte (lectura **acumulada**).
  *
- * Cada punto es una foto **acumulada**: para cada OM se toma su última
- * calificación en ese corte o antes, no solo lo que se calificó ese día. Así la
- * curva describe cómo avanzó el conjunto y no el ritmo de trabajo del evaluador.
- * `base` viaja con el punto para que el tooltip declare cuántas OM lo sustentan.
+ * Cada punto es una foto: para cada OM se toma su última calificación en ese
+ * corte o antes, no solo lo que se calificó ese día. Ya **no** alimenta las
+ * gráficas de evolución (ver `seriesPorSeguimiento`): solo la variación «vs
+ * corte anterior» de los KPI y del consolidado, que comparan el estado vigente
+ * de las mismas OM, igual que el valor del KPI.
  */
 export function serieAvancePorCorte(oms: OportunidadMejora[]): PuntoAvance[] {
   return cortesDe(oms)
@@ -131,6 +136,91 @@ export function serieAvancePorCorte(oms: OportunidadMejora[]): PuntoAvance[] {
       };
     })
     .filter((punto): punto is PuntoAvance => punto !== null);
+}
+
+/**
+ * Calificación que recibió una OM **en ese corte exacto**, o `null` si no se
+ * evaluó ese día. Si el libro repite la fecha del corte (dos columnas «30 ABRIL
+ * 2026»), vale la última: es la columna más reciente.
+ */
+export function calificacionDelCorte(om: OportunidadMejora, corte: string): Clasificacion | null {
+  let calificacion: Clasificacion | null = null;
+  for (const seguimiento of om.seguimientos) {
+    if (seguimiento.corte === corte && seguimiento.clasificacion !== null) {
+      calificacion = seguimiento.clasificacion;
+    }
+  }
+  return calificacion;
+}
+
+/** Última calificación de una OM **antes** de un corte (excluido), o `null`. */
+function calificacionPrevia(om: OportunidadMejora, corte: string): Clasificacion | null {
+  let previa: { corte: string; clasificacion: Clasificacion } | null = null;
+  for (const seguimiento of om.seguimientos) {
+    if (seguimiento.clasificacion === null || seguimiento.corte >= corte) continue;
+    if (!previa || seguimiento.corte >= previa.corte) {
+      previa = { corte: seguimiento.corte, clasificacion: seguimiento.clasificacion };
+    }
+  }
+  return previa?.clasificacion ?? null;
+}
+
+const promedioPorcentual = (calificaciones: Clasificacion[]): number =>
+  Number(
+    ((calificaciones.reduce<number>((suma, c) => suma + c, 0) / calificaciones.length / CLASIFICACION_MAXIMA) * 100).toFixed(1),
+  );
+
+export interface PuntoSeguimiento {
+  corte: string;
+  /** Avance promedio (0–100) de las OM evaluadas en ese corte. */
+  avance: number;
+  /** Porcentaje de las evaluadas que quedaron cumplidas (calificación 2). */
+  tasaCierre: number;
+  /** OM evaluadas (con calificación) en ese corte: base del punto. */
+  evaluadas: number;
+  cumplidas: number;
+}
+
+export interface SerieVigencia {
+  vigencia: string;
+  puntos: PuntoSeguimiento[];
+}
+
+/**
+ * Evolución **por seguimiento**: una serie por vigencia y, en cada corte, solo
+ * las OM evaluadas ese día. Reproduce la fila de promedios de cada hoja del
+ * libro de seguimiento.
+ *
+ * Se separa por vigencia porque cada ciclo de RXD se evalúa en fechas propias:
+ * mezclarlos en una sola línea haría subir o bajar el promedio por cambiar el
+ * grupo evaluado (14 OM en junio, 4 en septiembre), no por avance real
+ * ([ADR-0007](../../../docs/adr/0007-evolucion-por-seguimiento.md)).
+ */
+export function seriesPorSeguimiento(oms: OportunidadMejora[]): SerieVigencia[] {
+  const vigencias = [...new Set(oms.map((om) => om.vigencia))].sort();
+
+  return vigencias
+    .map((vigencia) => {
+      const delCiclo = oms.filter((om) => om.vigencia === vigencia);
+      const puntos = cortesDe(delCiclo)
+        .map((corte) => {
+          const evaluadas = delCiclo
+            .map((om) => calificacionDelCorte(om, corte))
+            .filter((c): c is Clasificacion => c !== null);
+          if (evaluadas.length === 0) return null;
+          const cumplidas = evaluadas.filter((c) => c === CLASIFICACION_MAXIMA).length;
+          return {
+            corte,
+            avance: promedioPorcentual(evaluadas),
+            tasaCierre: Number(((cumplidas / evaluadas.length) * 100).toFixed(1)),
+            evaluadas: evaluadas.length,
+            cumplidas,
+          };
+        })
+        .filter((punto): punto is PuntoSeguimiento => punto !== null);
+      return { vigencia, puntos };
+    })
+    .filter((serie) => serie.puntos.length > 0);
 }
 
 /** Variación entre los dos últimos cortes de una serie, en puntos porcentuales. */
@@ -227,39 +317,60 @@ export function avancePorResponsable(oms: OportunidadMejora[], limite?: number):
   return limite ? responsables.slice(0, limite) : responsables;
 }
 
-export interface HitoCorte extends PuntoAvance {
-  /** OM que recibieron calificación nueva en ese corte. */
-  calificadasEnElCorte: number;
+export interface HitoCorte extends PuntoSeguimiento {
+  /** Vigencias a las que pertenecen las OM evaluadas en el corte. */
+  vigencias: string[];
   funcionarios: string[];
-  /** Variación del avance respecto al corte anterior, en puntos porcentuales. */
+  /**
+   * Cambio del avance de **las mismas OM** frente a su calificación anterior,
+   * en puntos porcentuales. `null` si ninguna tenía calificación previa
+   * (primera evaluación).
+   */
   variacion: number | null;
 }
 
-/** Cortes de seguimiento como hitos, del más reciente al más antiguo. */
+/**
+ * Cortes de seguimiento como hitos, del más reciente al más antiguo. Cada hito
+ * describe solo lo evaluado ese día, y su variación compara esas mismas OM con
+ * su calificación anterior, para no confundir avance con cambio de población.
+ */
 export function hitosPorCorte(oms: OportunidadMejora[]): HitoCorte[] {
-  const serie = serieAvancePorCorte(oms);
-  const actividad = new Map<string, { calificadas: number; funcionarios: Set<string> }>();
+  return cortesDe(oms)
+    .map((corte) => {
+      const evaluadas = oms.filter((om) => calificacionDelCorte(om, corte) !== null);
+      if (evaluadas.length === 0) return null;
 
-  for (const om of oms) {
-    for (const seguimiento of om.seguimientos) {
-      const registro = actividad.get(seguimiento.corte) ?? { calificadas: 0, funcionarios: new Set<string>() };
-      if (seguimiento.clasificacion !== null) registro.calificadas += 1;
-      registro.funcionarios.add(seguimiento.funcionario);
-      actividad.set(seguimiento.corte, registro);
-    }
-  }
+      const actuales = evaluadas.map((om) => calificacionDelCorte(om, corte) as Clasificacion);
+      const cumplidas = actuales.filter((c) => c === CLASIFICACION_MAXIMA).length;
 
-  return serie
-    .map((punto, indice) => {
-      const registro = actividad.get(punto.corte);
-      const previo = indice > 0 ? serie[indice - 1] : undefined;
+      const pares = evaluadas
+        .map((om) => ({ antes: calificacionPrevia(om, corte), ahora: calificacionDelCorte(om, corte) as Clasificacion }))
+        .filter((par): par is { antes: Clasificacion; ahora: Clasificacion } => par.antes !== null);
+
+      const funcionarios = new Set<string>();
+      for (const om of evaluadas) {
+        for (const seguimiento of om.seguimientos) {
+          if (seguimiento.corte === corte) funcionarios.add(seguimiento.funcionario);
+        }
+      }
+
       return {
-        ...punto,
-        calificadasEnElCorte: registro?.calificadas ?? 0,
-        funcionarios: [...(registro?.funcionarios ?? [])],
-        variacion: previo ? Number((punto.avance - previo.avance).toFixed(1)) : null,
+        corte,
+        avance: promedioPorcentual(actuales),
+        tasaCierre: Number(((cumplidas / actuales.length) * 100).toFixed(1)),
+        evaluadas: actuales.length,
+        cumplidas,
+        vigencias: [...new Set(evaluadas.map((om) => om.vigencia))].sort(),
+        funcionarios: [...funcionarios],
+        variacion:
+          pares.length === 0
+            ? null
+            : Number(
+                (promedioPorcentual(pares.map((p) => p.ahora)) - promedioPorcentual(pares.map((p) => p.antes))).toFixed(1),
+              ),
       };
     })
+    .filter((hito): hito is HitoCorte => hito !== null)
     .reverse();
 }
 

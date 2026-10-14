@@ -3,12 +3,13 @@
 import { useMemo } from "react";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { ChartCard } from "@/components/charts/ChartCard";
-import { TrendLineChart } from "@/components/charts/TrendLineChart";
+import { EvolucionPorVigencia } from "@/components/charts/EvolucionPorVigencia";
 import { EstadoVacio } from "@/components/dashboard/EstadoVacio";
 import { useTableroOM } from "@/features/dashboard/useTableroOM";
 import { construirKPIs } from "@/features/dashboard/kpis";
-import { formatearFecha } from "@/lib/om/avance";
-import { serieAvancePorCorte } from "@/lib/om/metricas";
+import { seriesEvolucion, vigenciasDe } from "@/features/dashboard/evolucion";
+import { EVOLUCION_CIERRE } from "@/lib/om/explicaciones";
+import { AyudaCalculo } from "@/components/ui/AyudaCalculo";
 import { construirIndicadores } from "../_lib/indicadores";
 
 /**
@@ -16,20 +17,17 @@ import { construirIndicadores } from "../_lib/indicadores";
  * lectura, más la evolución de la tasa de cierre (regla dashboard §5, §9–11).
  */
 export function IndicadoresView({ temaId }: { temaId: string }) {
-  const { todas, oms, filtros, activos, controles, fijar, limpiar } = useTableroOM(temaId);
+  const { todas, oms, omsIgnorando, filtros, activos, controles, fijar, alternar, limpiar } =
+    useTableroOM(temaId);
 
   const kpis = useMemo(() => construirKPIs(oms, todas), [oms, todas]);
-  const indicadores = useMemo(() => construirIndicadores(oms), [oms]);
+  const indicadores = useMemo(() => construirIndicadores(oms, todas), [oms, todas]);
 
-  const serieCierre = useMemo(
-    () =>
-      serieAvancePorCorte(oms).map((punto) => ({
-        etiqueta: formatearFecha(punto.corte),
-        valor: punto.tasaCierre,
-        base: punto.base,
-      })),
-    [oms],
+  const seriesCierre = useMemo(
+    () => seriesEvolucion(omsIgnorando("vigencia"), "tasaCierre"),
+    [omsIgnorando],
   );
+  const vigencias = useMemo(() => vigenciasDe(todas), [todas]);
 
   return (
     <DashboardShell
@@ -40,18 +38,21 @@ export function IndicadoresView({ temaId }: { temaId: string }) {
       onClearAll={limpiar}
     >
       <ChartCard
-        title="Evolución de la tasa de cierre"
-        sub="Porcentaje de oportunidades cumplidas (calificación 2) sobre las ya calificadas en cada corte"
-        estado={serieCierre.length === 0 ? "vacio" : "ok"}
+        title="Evolución de la tasa de cierre por seguimiento y vigencia"
+        sub="Porcentaje de las OM evaluadas en cada corte que quedaron cumplidas (calificación 2) · una línea por vigencia"
+        calculo={EVOLUCION_CIERRE}
+        estado={seriesCierre.length === 0 ? "vacio" : "ok"}
         filtrada={activos}
         mensajeVacio="No existen cortes de seguimiento para los filtros seleccionados."
       >
-        <TrendLineChart
-          data={serieCierre}
-          serie="Tasa de cierre"
+        <EvolucionPorVigencia
+          series={seriesCierre}
+          vigencias={vigencias}
+          serie="tasa de cierre"
           ejeY="OM cumplidas (%)"
-          baseLabel="OM calificadas"
           meta={{ valor: 80, label: "Referencia 80 %" }}
+          seleccionada={filtros.vigencia || null}
+          onSelect={(vigencia) => alternar("vigencia", vigencia)}
         />
       </ChartCard>
 
@@ -91,6 +92,7 @@ export function IndicadoresView({ temaId }: { temaId: string }) {
                   <tr key={indicador.id}>
                     <th scope="row" className="celda-nombre">
                       {indicador.nombre}
+                      <AyudaCalculo cifra={indicador.nombre} texto={indicador.formula} />
                     </th>
                     <td className="num destacado">{indicador.valor}</td>
                     <td className="num">{indicador.referencia}</td>

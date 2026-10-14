@@ -2,6 +2,7 @@ import type { OportunidadMejora } from "@/types";
 import type { KPI } from "@/components/dashboard/KPIRow";
 import { formatearPorcentaje } from "@/lib/om/avance";
 import { resumen, serieAvancePorCorte, variacionUltimoCorte } from "@/lib/om/metricas";
+import { AVANCE_PROMEDIO, TASA_CIERRE, TOTAL_OM, VARIACION_ESTADO } from "@/lib/om/explicaciones";
 
 /**
  * Indicadores clave del tablero de OM (regla dashboard §5).
@@ -37,22 +38,21 @@ export function construirKPIs(oms: OportunidadMejora[], todas: OportunidadMejora
       nota: filtrado
         ? `de ${todas.length} en el sistema`
         : `vigencias ${datos.vigencias.join(", ") || "sin registro"}`,
-      formula: "Conteo de OM en el filtro aplicado (o del sistema completo, sin filtros).",
+      formula: TOTAL_OM,
     },
     {
-      label: "Tasa de cierre",
+      label: "Tasa de cierre vigente",
       value: formatearPorcentaje(datos.tasaCierre, 0),
       delta: delta(variacionUltimoCorte(serie, "tasaCierre")),
       nota: `${datos.cumplidas} de ${datos.total} cumplidas`,
-      formula: "OM cumplidas (calificación = 2) ÷ total de OM × 100.",
+      formula: `${TASA_CIERRE} Variación: ${VARIACION_ESTADO}`,
     },
     {
-      label: "Avance promedio",
+      label: "Avance promedio vigente",
       value: formatearPorcentaje(datos.avancePromedio, 0),
       delta: delta(variacionUltimoCorte(serie, "avance")),
       nota: "Escala institucional 0–2 en %",
-      formula:
-        "Promedio de (última calificación ÷ 2 × 100) de cada OM; una OM nunca calificada promedia como 0 %.",
+      formula: `${AVANCE_PROMEDIO} Variación: ${VARIACION_ESTADO}`,
     },
   ];
 }

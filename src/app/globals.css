@@ -331,6 +331,29 @@ h1, h2, h3, h4, p { margin: 0; }
 .escala-info-panel .data-table th, .escala-info-panel .data-table td { padding: 7px 10px; font-size: 12.5px; }
 .escala-info-nota { font-size: 11.5px; color: var(--uc-text-muted); margin-top: 10px; line-height: 1.5; }
 
+/* ---- AyudaCalculo: ícono «!» que explica cómo se calcula una cifra ----
+   Se abre con hover, foco o toque. El globo es `position: fixed` (coordenadas
+   calculadas en el componente) para que no lo recorten las tablas con scroll;
+   z-index por encima del encabezado fijo porque solo existe mientras el ícono
+   está a la vista (se cierra al desplazar). */
+.ayuda { display: inline-flex; vertical-align: middle; margin-left: 5px; }
+.ayuda-boton { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; padding: 0; border-radius: 50%; border: 1.5px solid var(--uc-green); background: var(--uc-surface); color: var(--uc-green); font-family: inherit; font-size: 10.5px; font-weight: 700; line-height: 1; cursor: help; transition: background 0.15s, color 0.15s; flex-shrink: 0; }
+.ayuda-boton:hover, .ayuda-boton[aria-expanded="true"] { background: var(--uc-green); color: #fff; }
+.ayuda-boton:focus-visible { outline: 2px solid var(--uc-green); outline-offset: 2px; }
+/* Mismo aspecto que el panel de InfoDisclosure (.escala-info-panel): tarjeta
+   blanca, filete con el degradado institucional arriba, borde fino y sombra. */
+.ayuda-globo { position: fixed; z-index: 60; display: block; background: var(--uc-surface); color: var(--uc-text); border: 1px solid var(--uc-hairline); border-top: 3px solid; border-image: var(--uc-gradient-primary) 1; border-radius: var(--r); box-shadow: var(--shadow-hover); padding: 14px; font-size: 12.5px; font-weight: 400; line-height: 1.55; text-align: left; text-transform: none; letter-spacing: normal; white-space: normal; pointer-events: none; }
+/* Se dibuja en <body> (portal), pero se fijan tipografía y márgenes por si
+   alguna regla global de `p` o `strong` cambiara. */
+.ayuda-globo p { margin: 0; }
+.ayuda-globo .ayuda-texto { font-size: 12.5px; color: var(--uc-text); line-height: 1.55; }
+.ayuda-globo .ayuda-nota { font-size: 11.5px; color: var(--uc-text-muted); margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--uc-hairline); line-height: 1.5; }
+.ayuda-globo .ayuda-nota strong { font-size: 11.5px; color: var(--uc-text-secondary); font-weight: 600; }
+/* Título de tarjeta con su «!» al lado, fuera del <h3> para que el nombre
+   accesible del encabezado no incluya el del botón. */
+.card-titulo { display: flex; align-items: center; gap: 2px; }
+.ayuda-globo .ayuda-titulo { font-weight: 600; font-size: 13px; color: var(--uc-green-dark); margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--uc-hairline); }
+
 /* ---- KPI (regla dashboard §5) ---- */
 .kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .kpi { background: var(--uc-surface); border: 1px solid var(--uc-hairline); border-top: 3px solid; border-image: var(--uc-gradient-primary) 1; border-radius: var(--r); padding: 20px; display: flex; flex-direction: column; gap: 6px; }
@@ -344,10 +367,10 @@ h1, h2, h3, h4, p { margin: 0; }
 .k-delta.baja { color: var(--uc-caution); }
 .k-delta.neutro { color: var(--uc-text-secondary); }
 .kpi .k-nota { font-size: 11.5px; color: var(--uc-text-muted); }
-/* Fórmula del indicador: separada de la nota por un filete, siempre visible
-   (no depende de hover/tooltip) para que el cálculo quede trazable en la propia
-   tarjeta. */
-.kpi .k-formula { font-size: 11px; color: var(--uc-text-muted); border-top: 1px solid var(--uc-hairline); padding-top: 6px; margin-top: 2px; line-height: 1.4; }
+/* La fórmula del indicador vive en el ícono «!» junto a la etiqueta
+   (AyudaCalculo): abre con hover, teclado o toque, y el lector de pantalla la
+   lee siempre por `aria-describedby`. */
+.kpi .k-label { display: inline-flex; align-items: center; }
 
 /* ---- grillas y tarjetas ---- */
 .grid-2a { display: grid; grid-template-columns: 1.45fr 1fr; gap: 16px; align-items: start; }

@@ -20,16 +20,18 @@ import {
 } from "@/lib/om/avance";
 import { estaVencida } from "@/lib/om/metricas";
 import { ultimoCorte } from "@/lib/om/dataset";
+import { AVANCE_OM, ESTADO_OM, VENCIDA } from "@/lib/om/explicaciones";
+import { AyudaCalculo } from "@/components/ui/AyudaCalculo";
 
 type Columna = "vigencia" | "numero" | "oportunidad" | "entrega" | "avance";
 type Direccion = "asc" | "desc";
 
-const COLUMNAS: { id: Columna; label: string; numerica?: boolean }[] = [
+const COLUMNAS: { id: Columna; label: string; numerica?: boolean; ayuda?: string }[] = [
   { id: "vigencia", label: "Vigencia" },
   { id: "numero", label: "PM N°", numerica: true },
   { id: "oportunidad", label: "Oportunidad de mejora" },
-  { id: "entrega", label: "Entrega comprometida" },
-  { id: "avance", label: "Avance", numerica: true },
+  { id: "entrega", label: "Entrega comprometida", ayuda: VENCIDA },
+  { id: "avance", label: "Avance", numerica: true, ayuda: AVANCE_OM },
 ];
 
 /** Valor comparable de una OM para cada columna ordenable. */
@@ -138,10 +140,14 @@ export function DatosView({ temaId }: { temaId: string }) {
                             {activa ? (orden.direccion === "asc" ? " ↑" : " ↓") : " ↕"}
                           </span>
                         </button>
+                        {columna.ayuda && <AyudaCalculo cifra={columna.label} texto={columna.ayuda} />}
                       </th>
                     );
                   })}
-                  <th scope="col">Estado</th>
+                  <th scope="col">
+                    Estado
+                    <AyudaCalculo cifra="Estado" texto={ESTADO_OM} />
+                  </th>
                 </tr>
               </thead>
               <tbody>

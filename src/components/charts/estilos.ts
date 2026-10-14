@@ -45,3 +45,42 @@ export const OPACIDAD_ATENUADA = 0.32;
 
 /** Duración de las animaciones de entrada, unificada entre gráficas. */
 export const ANIMACION_MS = 700;
+
+export type FormaMarcador = "circulo" | "cuadrado" | "triangulo" | "rombo";
+
+export interface EstiloSerie {
+  color: string;
+  /** Patrón de trazo SVG; `undefined` es línea continua. */
+  trazo?: string;
+  marcador: FormaMarcador;
+  /** Mismo marcador como carácter, para leyendas y tooltips. */
+  simbolo: string;
+}
+
+const ESTILOS_ANTERIORES: Omit<EstiloSerie, "color">[] = [
+  { trazo: "7 4", marcador: "cuadrado", simbolo: "■" },
+  { trazo: "2 4", marcador: "triangulo", simbolo: "▲" },
+  { trazo: "10 3 2 3", marcador: "rombo", simbolo: "◆" },
+];
+
+/**
+ * Estilo de una vigencia en las gráficas de evolución, definido una sola vez
+ * para que cada vigencia se vea igual en todas las vistas (regla dashboard §10).
+ *
+ * La más reciente lleva el verde institucional y las anteriores el gris oscuro
+ * neutro: la vista no pasa de un color principal (regla visual §1). Cada una
+ * se distingue además por trazo y marcador, nunca solo por color (§10–11).
+ *
+ * @param vigencia Vigencia a dibujar.
+ * @param todas Todas las vigencias del sistema (no solo las filtradas), para
+ *   que el estilo de una vigencia no cambie al filtrar.
+ */
+export function estiloVigencia(vigencia: string, todas: string[]): EstiloSerie {
+  const desdeLaMasReciente = [...todas].sort().reverse().indexOf(vigencia);
+  if (desdeLaMasReciente <= 0) return { color: "var(--uc-green)", marcador: "circulo", simbolo: "●" };
+  const estilo = ESTILOS_ANTERIORES[(desdeLaMasReciente - 1) % ESTILOS_ANTERIORES.length] ?? {
+    marcador: "cuadrado",
+    simbolo: "■",
+  };
+  return { color: "var(--uc-gray-dark)", ...estilo };
+}

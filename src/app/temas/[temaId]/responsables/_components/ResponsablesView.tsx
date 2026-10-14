@@ -11,6 +11,8 @@ import { construirKPIs } from "@/features/dashboard/kpis";
 import { avanceDeOM, colorEstado, entregaLegible, etiquetaEstado, simboloEstado } from "@/lib/om/avance";
 import { avancePorResponsable } from "@/lib/om/metricas";
 import { estadoDeOM } from "@/lib/om/avance";
+import { AVANCE_POR_RESPONSABLE, CUMPLIDAS, SIN_CERRAR } from "@/lib/om/explicaciones";
+import { AyudaCalculo } from "@/components/ui/AyudaCalculo";
 
 /** Responsables mostrados en la gráfica; el resto queda disponible en la tabla. */
 const MAX_RESPONSABLES_GRAFICA = 12;
@@ -32,6 +34,8 @@ export function ResponsablesView({ temaId }: { temaId: string }) {
   const kpis = useMemo(() => construirKPIs(oms, todas), [oms, todas]);
 
   const responsables = useMemo(() => avancePorResponsable(oms), [oms]);
+  /** La gráfica muestra solo una parte de los responsables. */
+  const recortada = responsables.length > MAX_RESPONSABLES_GRAFICA;
 
   const [seleccionado, setSeleccionado] = useState<string | null>(null);
   const alternarSeleccion = (clave: string) =>
@@ -64,10 +68,21 @@ export function ResponsablesView({ temaId }: { temaId: string }) {
       onClearAll={limpiar}
     >
       <ChartCard
-        title={`Avance promedio por responsable — ${MAX_RESPONSABLES_GRAFICA} con mayor carga`}
-        sub="Texto tal como se registró, sin dividir · se eligen los de más OM y se ordenan de mayor a menor avance · clic en una barra para ver su detalle"
+        title={
+          recortada
+            ? `Avance promedio por responsable — los ${MAX_RESPONSABLES_GRAFICA} con mayor carga de ${responsables.length}`
+            : `Avance promedio por responsable — ${responsables.length === 1 ? "el único registrado" : `los ${responsables.length}`}`
+        }
+        sub={
+          recortada
+            ? "Texto tal como se registró, sin dividir · se eligen los de más OM y se ordenan de mayor a menor avance · clic en una barra para ver su detalle"
+            : "Texto tal como se registró, sin dividir · ordenados de mayor a menor avance · clic en una barra para ver su detalle"
+        }
+        calculo={AVANCE_POR_RESPONSABLE}
         estado={responsablesGrafica.length === 0 ? "vacio" : "ok"}
-        filtrada={Boolean(seleccionado)}
+        // Se marca filtrada tanto por los filtros generales, que cambian las
+        // barras, como por la selección de un responsable, que las resalta.
+        filtrada={activos || Boolean(seleccionado)}
         ancha
       >
         <BarrasCategoria
@@ -107,12 +122,15 @@ export function ResponsablesView({ temaId }: { temaId: string }) {
                     </th>
                     <th scope="col" className="num">
                       Cumplidas
+                      <AyudaCalculo cifra="Cumplidas" texto={CUMPLIDAS} />
                     </th>
                     <th scope="col" className="num">
                       Sin cerrar
+                      <AyudaCalculo cifra="Sin cerrar" texto={SIN_CERRAR} />
                     </th>
                     <th scope="col" className="pct">
                       Avance
+                      <AyudaCalculo cifra="Avance" texto={AVANCE_POR_RESPONSABLE} />
                     </th>
                   </tr>
                 </thead>

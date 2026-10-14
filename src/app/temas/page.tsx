@@ -8,6 +8,8 @@ import { TEMAS } from "@/features/temas/temas";
 import { getTodasLasOM, ultimoCorte } from "@/lib/om/dataset";
 import { formatearFecha } from "@/lib/om/avance";
 import { resumen } from "@/lib/om/metricas";
+import { TASA_CIERRE, ULTIMO_CORTE } from "@/lib/om/explicaciones";
+import { AyudaCalculo } from "@/components/ui/AyudaCalculo";
 
 /** Layout 1 — Portada de temas (regla layouts §3–5). */
 export default function PortadaPage() {
@@ -55,11 +57,20 @@ export default function PortadaPage() {
           </div>
           <div className="m">
             <b>{global.cumplidas}</b>
-            <span>cumplidas ({global.tasaCierre?.toFixed(0) ?? 0}%)</span>
+            <span>
+              cumplidas ({global.tasaCierre?.toFixed(0) ?? 0}%)
+              <AyudaCalculo
+                cifra="OM cumplidas"
+                texto={`${TASA_CIERRE} Suma todas las OM de todos los sistemas.`}
+              />
+            </span>
           </div>
           <div className="m">
             <b>{formatearFecha(ultimoCorte(todas))}</b>
-            <span>último corte de seguimiento</span>
+            <span>
+              último corte de seguimiento
+              <AyudaCalculo cifra="Último corte de seguimiento" texto={ULTIMO_CORTE} />
+            </span>
           </div>
         </div>
       </div>

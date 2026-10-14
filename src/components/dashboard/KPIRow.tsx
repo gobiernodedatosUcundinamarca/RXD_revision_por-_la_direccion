@@ -1,3 +1,5 @@
+import { AyudaCalculo } from "@/components/ui/AyudaCalculo";
+
 /** Indicador clave de la cabecera del tablero (regla dashboard §5). */
 export interface KPI {
   label: string;
@@ -7,7 +9,7 @@ export interface KPI {
   delta?: { label: string; direccion: "sube" | "baja" | "neutro" };
   /** Meta, base de cálculo o aclaración de lectura. */
   nota?: string;
-  /** Fórmula con la que se calcula el indicador, mostrada en el propio KPI. */
+  /** Cómo se calcula el indicador: se muestra en el ícono «!» de la etiqueta. */
   formula?: string;
 }
 
@@ -25,7 +27,10 @@ export function KPIRow({ kpis }: { kpis: KPI[] }) {
     <div className="kpi-row">
       {kpis.map((kpi) => (
         <div key={kpi.label} className="kpi">
-          <div className="k-label">{kpi.label}</div>
+          <div className="k-label">
+            {kpi.label}
+            {kpi.formula && <AyudaCalculo cifra={kpi.label} texto={kpi.formula} />}
+          </div>
           <div className="k-val">{kpi.value}</div>
           {kpi.delta && (
             <div className={`k-delta ${kpi.delta.direccion}`}>
@@ -34,7 +39,6 @@ export function KPIRow({ kpis }: { kpis: KPI[] }) {
             </div>
           )}
           {kpi.nota && <div className="k-nota">{kpi.nota}</div>}
-          {kpi.formula && <div className="k-formula">{kpi.formula}</div>}
         </div>
       ))}
     </div>

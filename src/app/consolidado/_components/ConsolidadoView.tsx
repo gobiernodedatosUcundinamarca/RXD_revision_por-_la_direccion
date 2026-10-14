@@ -27,6 +27,18 @@ import {
   vigenciasGlobales,
 } from "../_lib/comparativo";
 import { BarrasEstadoPorSistema } from "./BarrasEstadoPorSistema";
+import { AyudaCalculo } from "@/components/ui/AyudaCalculo";
+import {
+  ATENCION,
+  AVANCE_GLOBAL,
+  AVANCE_POR_SISTEMA,
+  COMPOSICION_ESTADO,
+  CUMPLIDAS,
+  SIN_CERRAR,
+  TASA_CIERRE,
+  ULTIMO_CORTE,
+  VARIACION_ESTADO,
+} from "@/lib/om/explicaciones";
 
 /**
  * Tablero consolidado: la última medición de **todos** los sistemas de gestión,
@@ -100,20 +112,19 @@ export function ConsolidadoView() {
       label: "Oportunidades de mejora",
       value: globales.total.toLocaleString("es-CO"),
       nota: `en ${globales.sistemas} sistemas integrados de gestión`,
-      formula: "Conteo de OM de todos los sistemas, sumadas (o filtradas por vigencia).",
+      formula: "Suma de las OM de todos los sistemas (solo las de la vigencia elegida, si hay filtro).",
     },
     {
-      label: "Tasa de cierre global",
+      label: "Tasa de cierre global vigente",
       value: formatearPorcentaje(globales.tasaCierre, 0),
       nota: `${globales.cumplidas} de ${globales.total} OM cumplidas`,
-      formula: "OM cumplidas (calificación = 2) ÷ total de OM del portafolio × 100.",
+      formula: `${TASA_CIERRE} Se calcula sobre todas las OM de todos los sistemas juntos.`,
     },
     {
-      label: "Avance promedio global",
+      label: "Avance promedio global vigente",
       value: formatearPorcentaje(globales.avance, 0),
       nota: "Escala institucional 0–2 en %",
-      formula:
-        "Promedio de (última calificación ÷ 2 × 100) de cada OM del portafolio; una OM nunca calificada promedia como 0 %.",
+      formula: AVANCE_GLOBAL,
     },
   ];
 
@@ -138,6 +149,7 @@ export function ConsolidadoView() {
             <ChartCard
               title="Avance promedio por sistema de gestión"
               sub="Última calificación vigente de cada OM · escala 0–2 expresada en %"
+              calculo={AVANCE_POR_SISTEMA}
               filtrada={Boolean(vigencia)}
             >
               <BarrasCategoria
@@ -152,6 +164,7 @@ export function ConsolidadoView() {
             <ChartCard
               title="Composición del portafolio por sistema"
               sub="Número de OM en cada estado de avance"
+              calculo={COMPOSICION_ESTADO}
               filtrada={Boolean(vigencia)}
             >
               <BarrasEstadoPorSistema data={apiladas} estados={estados} />
@@ -165,7 +178,7 @@ export function ConsolidadoView() {
           <div className="card">
             <div className="card-head">
               <div>
-                <h3>Última medición de cada sistema</h3>
+                <h3>Estado vigente de cada sistema</h3>
                 <div className="card-sub">
                   Clic en un sistema para ver su composición; el enlace abre su tablero completo
                 </div>
@@ -183,13 +196,34 @@ export function ConsolidadoView() {
                 <thead>
                   <tr>
                     <th scope="col">Sistema</th>
-                    <th scope="col">Último corte</th>
+                    <th scope="col">
+                      Último corte
+                      <AyudaCalculo cifra="Último corte" texto={ULTIMO_CORTE} />
+                    </th>
                     <th scope="col" className="num">OM</th>
-                    <th scope="col" className="num">Cumplidas</th>
-                    <th scope="col" className="num">Sin cerrar</th>
-                    <th scope="col" className="num">Atención</th>
-                    <th scope="col" className="pct">Avance</th>
-                    <th scope="col">Variación</th>
+                    <th scope="col" className="num">
+                      Cumplidas
+                      <AyudaCalculo cifra="Cumplidas" texto={CUMPLIDAS} />
+                    </th>
+                    <th scope="col" className="num">
+                      Sin cerrar
+                      <AyudaCalculo cifra="Sin cerrar" texto={SIN_CERRAR} />
+                    </th>
+                    <th scope="col" className="num">
+                      Atención
+                      <AyudaCalculo cifra="Atención" texto={ATENCION} />
+                    </th>
+                    <th scope="col" className="pct">
+                      Avance
+                      <AyudaCalculo cifra="Avance" texto={AVANCE_POR_SISTEMA} />
+                    </th>
+                    <th scope="col">
+                      Variación
+                      <AyudaCalculo
+                        cifra="Variación"
+                        texto={`${VARIACION_ESTADO} Se mide contra el corte anterior de ese mismo sistema.`}
+                      />
+                    </th>
                     <th scope="col">Tablero</th>
                   </tr>
                 </thead>

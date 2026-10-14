@@ -5,28 +5,35 @@ import Link from "next/link";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { EstadoTag } from "@/components/dashboard/EstadoTag";
 import { ChartCard } from "@/components/charts/ChartCard";
-import { TrendLineChart } from "@/components/charts/TrendLineChart";
+import { EvolucionPorVigencia } from "@/components/charts/EvolucionPorVigencia";
 import { DonutChart } from "@/components/charts/DonutChart";
 import { BarrasCategoria } from "@/components/charts/BarrasCategoria";
 import { LeyendaInteractiva } from "@/components/charts/LeyendaInteractiva";
 import { useTableroOM } from "@/features/dashboard/useTableroOM";
 import { construirKPIs } from "@/features/dashboard/kpis";
+import { seriesEvolucion, vigenciasDe } from "@/features/dashboard/evolucion";
 import {
   avanceDeOM,
   colorEstado,
   entregaLegible,
   etiquetaEstado,
-  formatearFecha,
   simboloEstado,
 } from "@/lib/om/avance";
 import {
   avancePorVigencia,
   distribucionPorEstado,
   ordenarPorRezago,
-  serieAvancePorCorte,
   ultimaObservacion,
 } from "@/lib/om/metricas";
 import { estadoDeOM } from "@/lib/om/avance";
+import {
+  AVANCE_OM,
+  AVANCE_POR_VIGENCIA,
+  COMPOSICION_ESTADO,
+  EVOLUCION_AVANCE,
+  REZAGO,
+} from "@/lib/om/explicaciones";
+import { AyudaCalculo } from "@/components/ui/AyudaCalculo";
 
 /** Cuántas OM rezagadas se listan en el panel de atención prioritaria. */
 const MAX_PRIORITARIAS = 6;
@@ -44,15 +51,10 @@ export function ResumenView({ temaId }: { temaId: string }) {
 
   const kpis = useMemo(() => construirKPIs(oms, todas), [oms, todas]);
 
-  const serie = useMemo(
-    () =>
-      serieAvancePorCorte(oms).map((punto) => ({
-        etiqueta: formatearFecha(punto.corte),
-        valor: punto.avance,
-        base: punto.base,
-      })),
-    [oms],
-  );
+  // Una línea por vigencia: se calcula ignorando el filtro de vigencia, que la
+  // propia gráfica controla desde su leyenda (la selección atenúa las demás).
+  const series = useMemo(() => seriesEvolucion(omsIgnorando("vigencia"), "avance"), [omsIgnorando]);
+  const vigencias = useMemo(() => vigenciasDe(todas), [todas]);
 
   // El donut filtra por estado: se calcula ignorando ese mismo filtro para no
   // reducirse al único segmento seleccionado.
@@ -101,28 +103,32 @@ export function ResumenView({ temaId }: { temaId: string }) {
     >
       <div className="grid-2a">
         <ChartCard
-          title="Evolución del avance del portafolio"
-          sub="Avance promedio acumulado en cada corte de seguimiento · escala 0–2 expresada en %"
-          estado={serie.length === 0 ? "vacio" : "ok"}
+          title="Evolución del avance por seguimiento y vigencia"
+          sub="Avance promedio de las OM evaluadas en cada corte · una línea por vigencia · escala 0–2 en %"
+          calculo={EVOLUCION_AVANCE}
+          estado={series.length === 0 ? "vacio" : "ok"}
           filtrada={activos}
           mensajeVacio="No existen cortes de seguimiento para los filtros seleccionados."
         >
-          <TrendLineChart
-            data={serie}
-            serie="Avance promedio"
+          <EvolucionPorVigencia
+            series={series}
+            vigencias={vigencias}
+            serie="avance"
             ejeY="Avance (%)"
-            baseLabel="OM calificadas"
             meta={{ valor: 100, label: "Cierre total" }}
+            seleccionada={filtros.vigencia || null}
+            onSelect={(vigencia) => alternar("vigencia", vigencia)}
           />
           <p className="chart-highlight">
-            Cada punto refleja la última calificación vigente de cada oportunidad en esa fecha, no solo lo
-            calificado ese día.
+            Cada punto promedia solo las oportunidades evaluadas en ese seguimiento, igual que la fila de
+            promedios del libro de cada vigencia.
           </p>
         </ChartCard>
 
         <ChartCard
           title="Composición por estado de avance"
-          sub="Clic en un segmento para filtrar todo el tablero"
+          sub="Número de OM según su última calificación · clic en un segmento para filtrar todo el tablero"
+          calculo={COMPOSICION_ESTADO}
           estado={porEstado.length === 0 ? "vacio" : "ok"}
           filtrada={Boolean(filtros.estado)}
         >
@@ -145,6 +151,7 @@ export function ResumenView({ temaId }: { temaId: string }) {
         <ChartCard
           title="Avance promedio por vigencia de la RXD"
           sub="Ordenado de mayor a menor avance, no por año · clic en una barra para filtrar"
+          calculo={AVANCE_POR_VIGENCIA}
           estado={porVigencia.length === 0 ? "vacio" : "ok"}
           filtrada={Boolean(filtros.vigencia)}
         >
@@ -159,7 +166,13 @@ export function ResumenView({ temaId }: { temaId: string }) {
         <div className="card">
           <div className="card-head">
             <div>
-              <h3>Oportunidades de mejora con mayor rezago</h3>
+              <div className="card-titulo">
+                <h3>Oportunidades de mejora con mayor rezago</h3>
+                <AyudaCalculo
+                  cifra="Oportunidades de mejora con mayor rezago"
+                  texto={`${REZAGO} ${AVANCE_OM}`}
+                />
+              </div>
               <div className="card-sub">Sin cerrar, ordenadas de menor a mayor avance</div>
             </div>
             {activos && <span className="filtered-badge">Filtrada</span>}
@@ -209,7 +222,7 @@ export function ResumenView({ temaId }: { temaId: string }) {
       <div className="card">
         <div className="card-head">
           <div>
-            <h3>Último reporte de seguimiento</h3>
+            <h3>Última observación de la OM más rezagada</h3>
             <div className="card-sub">
               Observación registrada en el corte más reciente de la OM con mayor rezago
             </div>

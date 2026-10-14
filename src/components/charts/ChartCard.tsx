@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { EstadoVacio } from "@/components/dashboard/EstadoVacio";
+import { AyudaCalculo } from "@/components/ui/AyudaCalculo";
 
 /** Estados obligatorios de toda gráfica (regla dashboard §9). */
 export type EstadoGrafica = "ok" | "cargando" | "error" | "vacio";
@@ -9,6 +10,8 @@ interface ChartCardProps {
   title: string;
   /** Variable, periodo, unidad o población — cuando el título solo no baste (§1). */
   sub?: string;
+  /** Cómo se calculan los valores de la gráfica: ícono «!» junto al título. */
+  calculo?: string;
   /** Estado de la gráfica; por defecto se pinta el contenido (§9). */
   estado?: EstadoGrafica;
   /** Indica que la gráfica muestra una selección activa (§9 «Filtrada»). */
@@ -32,17 +35,18 @@ interface ChartCardProps {
  *
  * @example
  * <ChartCard
- *   title="Avance promedio por corte de seguimiento"
- *   sub="Escala 0–2 expresada en % · 2023–2026"
- *   estado={serie.length === 0 ? "vacio" : "ok"}
+ *   title="Avance promedio por vigencia de la RXD"
+ *   sub="Escala 0–2 expresada en % · 2022–2025"
+ *   estado={barras.length === 0 ? "vacio" : "ok"}
  *   filtrada={hayFiltros}
  * >
- *   <TrendLineChart data={serie} />
+ *   <BarrasCategoria data={barras} />
  * </ChartCard>
  */
 export function ChartCard({
   title,
   sub,
+  calculo,
   estado = "ok",
   filtrada,
   mensajeVacio,
@@ -54,7 +58,10 @@ export function ChartCard({
     <div className={`card${ancha ? " card-ancha" : ""}`}>
       <div className="card-head">
         <div>
-          <h3>{title}</h3>
+          <div className="card-titulo">
+            <h3>{title}</h3>
+            {calculo && <AyudaCalculo cifra={title} texto={calculo} />}
+          </div>
           {sub && <div className="card-sub">{sub}</div>}
         </div>
         {filtrada && estado === "ok" && (

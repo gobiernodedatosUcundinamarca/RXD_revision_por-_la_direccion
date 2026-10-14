@@ -31,7 +31,8 @@ Cada componente lleva su TSDoc con props y ejemplo de uso; aquí se documenta el
 | Componente | Uso |
 |---|---|
 | `DashboardShell` | Impone el orden de lectura de todo tablero: KPIs → filtros → detalle (regla dashboard §5–7). |
-| `KPIRow` | Fila de indicadores clave (3 por tablero). La variación se señala con flecha **y** color. Cada `KPI` trae su `formula` (cómo se calculó) siempre visible en la tarjeta, no en tooltip. Tipo `KPI` exportado. |
+| `KPIRow` | Fila de indicadores clave (3 por tablero). La variación se señala con flecha **y** color. Cada `KPI` trae su `formula` (cómo se calculó), que se muestra en el ícono «!» junto a la etiqueta (`AyudaCalculo`). Tipo `KPI` exportado. |
+| `AyudaCalculo` (`src/components/ui/`) | Ícono «!» que explica cómo se calcula una cifra. Se abre con hover, foco de teclado o toque y se cierra con Escape, al salir o al desplazar. El texto está siempre enlazado por `aria-describedby`, y el globo usa posición fija para que no lo recorten las tablas con scroll. Los textos salen de `src/lib/om/explicaciones.ts`, la fuente única de cómo se calcula cada cifra. Lo usan los KPI, `ChartCard` (prop `calculo`), los encabezados de tablas, los indicadores y la portada. |
 | `FilterBar` | Barra de filtros **controlada**: el estado vive en `FiltrosProvider`. Chips de filtros activos, cada uno removible, y «Limpiar filtros». Cada `FilterConfig` admite `ayuda` (nodo opcional junto a la etiqueta). |
 | `InfoDisclosure` | Base genérica de disclosure informativo (`<details>` con «ⓘ + resumen» y panel). No se usa directo en las vistas; lo envuelven `EscalaAvanceInfo` y `ColumnasComparativoInfo`. |
 | `EscalaAvanceInfo` | `InfoDisclosure` con la tabla calificación → estado → % de avance. Se engancha como `ayuda` del filtro «Estado» en `useTableroOM`, así que aparece en las 5 vistas del layout interno sin repetirse. |
@@ -43,16 +44,17 @@ Cada componente lleva su TSDoc con props y ejemplo de uso; aquí se documenta el
 
 | Componente | Uso |
 |---|---|
-| `ChartCard` | **Envoltura obligatoria de toda gráfica.** Título, subtítulo, distintivo «Filtrada» y los estados Cargando / Sin datos / Error (regla dashboard §9, §12). |
-| `TrendLineChart` | Evolución temporal con etiquetas de valor, línea de meta y tooltip que declara la base del punto. No filtra: un corte no es una dimensión del tablero. |
+| `ChartCard` | **Envoltura obligatoria de toda gráfica.** Título, subtítulo, distintivo «Filtrada» y los estados Cargando / Sin datos / Error (regla dashboard §9, §12). La prop `calculo` añade el ícono «!» que explica cómo se calculan los valores. |
+| `EvolucionPorVigencia` | Evolución **por seguimiento**: una línea por vigencia y, en cada corte, solo las OM evaluadas ese día ([ADR-0007](adr/0007-evolucion-por-seguimiento.md)). Cada vigencia se distingue por color, trazo, marcador y su nombre al final de la línea. El tooltip declara evaluadas y cumplidas, y la leyenda filtra por vigencia (atenúa las demás). La alimenta `seriesEvolucion` (`src/features/dashboard/evolucion.ts`). |
 | `DonutChart` | Composición por categoría con clic-para-filtrar. El segmento activo se resalta con borde y los demás bajan de opacidad sin desaparecer. |
 | `BarrasCategoria` | Barras por categoría con clic-para-filtrar, en orientación vertical u horizontal (esta última para etiquetas largas). |
 | `LeyendaInteractiva` | Leyenda que además filtra, **accesible con teclado**. Cubre el hueco de Recharts, cuyos segmentos y barras no son focalizables. |
-| `estilos.ts` | Tooltip, ejes, rejilla, opacidad y duración de animación compartidos. Recharts exige estilos en línea; aquí se definen una vez y siempre sobre tokens. |
+| `estilos.ts` | Tooltip, ejes, rejilla, opacidad y duración de animación compartidos. Recharts exige estilos en línea; aquí se definen una vez y siempre sobre tokens. También `estiloVigencia`: la vigencia más reciente va en verde institucional y las anteriores en gris oscuro, cada una con su trazo y marcador. |
 
 ### Contrato de una gráfica nueva
 
-1. Envolverla en `ChartCard` con título descriptivo y subtítulo que declare variable, periodo o unidad.
+1. Envolverla en `ChartCard` con título descriptivo y subtítulo que declare variable, periodo o unidad,
+   y con `calculo` tomado de `src/lib/om/explicaciones.ts` (si el cálculo es nuevo, se redacta allí).
 2. Pasar `estado="vacio"` cuando el filtro no deje datos, y `filtrada` cuando haya selección activa.
 3. Tomar los colores de `ESTADOS` (`src/lib/om/avance.ts`) o de los tokens; nunca un HEX suelto.
    Si se introduce una escala nueva, **validarla con el script** de la metodología de visualización

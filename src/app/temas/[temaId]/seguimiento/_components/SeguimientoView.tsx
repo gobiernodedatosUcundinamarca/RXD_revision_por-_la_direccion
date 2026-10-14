@@ -3,11 +3,12 @@
 import { useMemo, useState } from "react";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { ChartCard } from "@/components/charts/ChartCard";
-import { TrendLineChart } from "@/components/charts/TrendLineChart";
+import { EvolucionPorVigencia } from "@/components/charts/EvolucionPorVigencia";
 import { EstadoVacio } from "@/components/dashboard/EstadoVacio";
 import { EstadoTag } from "@/components/dashboard/EstadoTag";
 import { useTableroOM } from "@/features/dashboard/useTableroOM";
 import { construirKPIs } from "@/features/dashboard/kpis";
+import { seriesEvolucion, vigenciasDe } from "@/features/dashboard/evolucion";
 import {
   colorClasificacion,
   colorEstado,
@@ -18,28 +19,24 @@ import {
   simboloClasificacion,
   simboloEstado,
 } from "@/lib/om/avance";
-import { hitosPorCorte, ordenarPorRezago, serieAvancePorCorte } from "@/lib/om/metricas";
+import { hitosPorCorte, ordenarPorRezago } from "@/lib/om/metricas";
+import { ESTADO_OM, EVOLUCION_AVANCE, HITOS_CORTE } from "@/lib/om/explicaciones";
+import { AyudaCalculo } from "@/components/ui/AyudaCalculo";
 
 /**
  * Cronología del seguimiento: qué se evaluó en cada corte y cómo evolucionó
  * cada oportunidad de mejora a lo largo de ellos.
  */
 export function SeguimientoView({ temaId }: { temaId: string }) {
-  const { todas, oms, filtros, activos, controles, fijar, limpiar } = useTableroOM(temaId);
+  const { todas, oms, omsIgnorando, filtros, activos, controles, fijar, alternar, limpiar } =
+    useTableroOM(temaId);
   const [seleccionada, setSeleccionada] = useState<string | null>(null);
 
   const kpis = useMemo(() => construirKPIs(oms, todas), [oms, todas]);
   const hitos = useMemo(() => hitosPorCorte(oms), [oms]);
 
-  const serie = useMemo(
-    () =>
-      serieAvancePorCorte(oms).map((punto) => ({
-        etiqueta: formatearFecha(punto.corte),
-        valor: punto.avance,
-        base: punto.base,
-      })),
-    [oms],
-  );
+  const series = useMemo(() => seriesEvolucion(omsIgnorando("vigencia"), "avance"), [omsIgnorando]);
+  const vigencias = useMemo(() => vigenciasDe(todas), [todas]);
 
   // Se prioriza lo rezagado: es donde el historial de cortes aporta más.
   const rezagadas = useMemo(() => ordenarPorRezago(oms), [oms]);
@@ -57,18 +54,21 @@ export function SeguimientoView({ temaId }: { temaId: string }) {
       onClearAll={limpiar}
     >
       <ChartCard
-        title="Avance del portafolio a lo largo de los cortes de seguimiento"
-        sub="Avance promedio acumulado en cada corte · escala 0–2 expresada en %"
-        estado={serie.length === 0 ? "vacio" : "ok"}
+        title="Avance en cada corte de seguimiento, por vigencia"
+        sub="Avance promedio de las OM evaluadas en cada corte · una línea por vigencia · escala 0–2 en %"
+        calculo={EVOLUCION_AVANCE}
+        estado={series.length === 0 ? "vacio" : "ok"}
         filtrada={activos}
         mensajeVacio="No existen cortes de seguimiento para los filtros seleccionados."
         ancha
       >
-        <TrendLineChart
-          data={serie}
-          serie="Avance promedio"
+        <EvolucionPorVigencia
+          series={series}
+          vigencias={vigencias}
+          serie="avance"
           ejeY="Avance (%)"
-          baseLabel="OM calificadas"
+          seleccionada={filtros.vigencia || null}
+          onSelect={(vigencia) => alternar("vigencia", vigencia)}
         />
       </ChartCard>
 
@@ -76,10 +76,13 @@ export function SeguimientoView({ temaId }: { temaId: string }) {
         <div className="card">
           <div className="card-head">
             <div>
-              <h3>Cortes de seguimiento</h3>
+              <div className="card-titulo">
+                <h3>Cortes de seguimiento</h3>
+                <AyudaCalculo cifra="Cortes de seguimiento" texto={HITOS_CORTE} />
+              </div>
               <div className="card-sub">
-                Del más reciente al más antiguo · la variación también refleja el ingreso de nuevas
-                OM al portafolio, no solo cambios de calificación
+                Del más reciente al más antiguo · cada corte cuenta solo las OM evaluadas ese día; la
+                variación compara esas mismas OM con su calificación anterior
               </div>
             </div>
             {activos && <span className="filtered-badge">Filtrada</span>}
@@ -99,21 +102,24 @@ export function SeguimientoView({ temaId }: { temaId: string }) {
                       <b>{formatearFecha(hito.corte)}</b>
                       <span className={`corte-var ${variacionClase(hito.variacion)}`}>
                         {hito.variacion === null
-                          ? "Primer corte"
+                          ? "Primera evaluación"
                           : `${hito.variacion > 0 ? "↑ +" : hito.variacion < 0 ? "↓ " : "→ "}${
                               hito.variacion === 0 ? "sin cambio" : `${Math.abs(hito.variacion)} pp`
-                            }`}
+                            } vs su calificación anterior`}
                       </span>
                     </div>
                     <div className="corte-cifras">
                       <span>
+                        OM evaluadas <b>{hito.evaluadas}</b>
+                      </span>
+                      <span>
                         Avance <b>{hito.avance}%</b>
                       </span>
                       <span>
-                        Cumplidas <b>{hito.cumplidas}</b> de {hito.base}
+                        Cumplidas <b>{hito.cumplidas}</b> de {hito.evaluadas}
                       </span>
                       <span>
-                        Calificadas en el corte <b>{hito.calificadasEnElCorte}</b>
+                        Vigencia{hito.vigencias.length > 1 ? "s" : ""} <b>{hito.vigencias.join(", ")}</b>
                       </span>
                     </div>
                     <p className="corte-meta">Evaluó: {hito.funcionarios.join(" · ")}</p>
@@ -162,7 +168,8 @@ export function SeguimientoView({ temaId }: { temaId: string }) {
                     {detalle.responsable || "Sin registrar"} · Entrega comprometida: {entregaLegible(detalle)}
                   </p>
                   <p className="om-meta">
-                    Estado vigente:{" "}
+                    Estado vigente
+                    <AyudaCalculo cifra="Estado vigente" texto={ESTADO_OM} />:{" "}
                     <EstadoTag
                       color={colorEstado(estadoDeOM(detalle))}
                       simbolo={simboloEstado(estadoDeOM(detalle))}
