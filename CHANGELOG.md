@@ -37,6 +37,12 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ### Añadido
 
+- **Skill `/importar-datos`** (`.claude/skills/importar-datos/`): el procedimiento para incorporar
+  un libro nuevo de `data/<dd-mm-aaaa>/` (ETL, revisión de fechas de corte, medición del alcance,
+  docs, CHANGELOG y commit). Incluye `comparar-dataset.mjs`, que compara dos versiones de
+  `om-rxd.json` y falla si cambió algo ya registrado. Probado contra los commits de datos
+  `162742f` (995 → 1 021, solo cortes nuevos) y `b5a854d` (8 registros de SGSI quitados).
+
 - **Hook `Stop` `.claude/hooks/recordar-reglas.mjs`**: si quedó un cambio sustancial (dependencias,
   estructura de `src/`, ADR, ETL, métricas, CI) sin tocar las reglas, le pide a Claude revisarlas
   antes de cerrar. Avisa una sola vez por conjunto de cambios y también mira los commits hechos
