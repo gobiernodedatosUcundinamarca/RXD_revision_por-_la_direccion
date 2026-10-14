@@ -26,7 +26,14 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { leerLibro } from "./lib/xlsx.mjs";
 import { escribirLibro } from "./lib/xlsx-escribir.mjs";
-import { CORTES_DESCARTADOS, SISTEMAS, limpiar, normalizarFecha, vigenciaDeHoja } from "./lib/dominio.mjs";
+import {
+  CORTES_CORREGIDOS,
+  CORTES_DESCARTADOS,
+  SISTEMAS,
+  limpiar,
+  normalizarFecha,
+  vigenciaDeHoja,
+} from "./lib/dominio.mjs";
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), "..");
 const ORIGEN = join(RAIZ, "data");
@@ -49,10 +56,13 @@ const COLUMNAS_BASE = [
  *
  * No se puede asumir que sean adyacentes: alguna hoja intercala una columna
  * «EVIDENCIA» entre ambas. Los cortes cuya fecha no se puede interpretar se
- * descartan con aviso, para que todo seguimiento tenga fecha. También los
- * declarados en `CORTES_DESCARTADOS` (fecha mal digitada).
+ * descartan con aviso, para que todo seguimiento tenga fecha. Después se
+ * aplican las reglas explícitas `CORTES_DESCARTADOS` y `CORTES_CORREGIDOS`.
+ *
+ * @param origen `"base"` (libros de `data/`) o `"actualizacion"` (`data/<dd-mm-aaaa>/`).
+ * @param vigencia Año del nombre de la hoja, o `null` si no lo trae.
  */
-function mapearCortes(encabezados, definicion, avisos, contexto) {
+function mapearCortes(encabezados, definicion, origen, vigencia, avisos, contexto) {
   const cortes = [];
 
   for (let col = 0; col < encabezados.length; col++) {
@@ -92,13 +102,37 @@ function mapearCortes(encabezados, definicion, avisos, contexto) {
     });
   }
 
-  return cortes.filter((corte, i) => {
-    const regla = CORTES_DESCARTADOS.find((r) => r.sistema === definicion.id && r.fecha === corte.fecha);
-    const fueraDeOrden = cortes.slice(i + 1).some((siguiente) => siguiente.fecha < corte.fecha);
-    if (!regla || !fueraDeOrden) return true;
-    avisos.push(`${contexto}: corte ${corte.fecha} (columna ${corte.colObservacion}) descartado — ${regla.motivo}`);
-    return false;
+  // Reglas explícitas de dominio.mjs sobre columnas mal rotuladas.
+  const ocurrencias = new Map();
+  const aplica = (regla, corte, ocurrencia, indice) =>
+    regla.sistema === definicion.id &&
+    regla.fecha === corte.fecha &&
+    (regla.ocurrencia === undefined || regla.ocurrencia === ocurrencia) &&
+    (regla.en === undefined || regla.en === origen) &&
+    (regla.vigencia === undefined || vigencia === null || regla.vigencia === vigencia) &&
+    (!regla.soloFueraDeOrden || cortes.slice(indice + 1).some((siguiente) => siguiente.fecha < corte.fecha));
+
+  const resultado = [];
+  cortes.forEach((corte, indice) => {
+    const ocurrencia = (ocurrencias.get(corte.fecha) ?? 0) + 1;
+    ocurrencias.set(corte.fecha, ocurrencia);
+
+    const descarte = CORTES_DESCARTADOS.find((regla) => aplica(regla, corte, ocurrencia, indice));
+    if (descarte) {
+      avisos.push(`${contexto}: corte ${corte.fecha} (columna ${corte.colObservacion}) descartado — ${descarte.motivo}`);
+      return;
+    }
+    const correccion = CORTES_CORREGIDOS.find((regla) => aplica(regla, corte, ocurrencia, indice));
+    if (correccion) {
+      avisos.push(
+        `${contexto}: corte ${corte.fecha} (columna ${corte.colObservacion}) fechado ${correccion.fechaReal} — ${correccion.motivo}`,
+      );
+      resultado.push({ ...corte, fecha: correccion.fechaReal });
+      return;
+    }
+    resultado.push(corte);
   });
+  return resultado;
 }
 
 /**
@@ -176,7 +210,7 @@ function limpiarHoja(hoja, definicion, avisos, contexto) {
   if (!/PM\s*N/i.test(String(encabezados[0] ?? ""))) return null;
 
   const vigencia = vigenciaDeHoja(hoja.nombre);
-  const cortes = mapearCortes(encabezados, definicion, avisos, contexto);
+  const cortes = mapearCortes(encabezados, definicion, "base", vigencia, avisos, contexto);
 
   const cabecera = [
     ...COLUMNAS_BASE,
@@ -251,7 +285,7 @@ function aplicarActualizacion(hoja, definicion, hojasSistema, avisos, contexto) 
   const filas = hoja.filas.filter((f) => f && f.some((c) => c != null && c !== ""));
   if (filas.length < 2 || !/PM\s*N/i.test(String(filas[0][0] ?? ""))) return null;
 
-  const cortes = mapearCortes(filas[0], definicion, avisos, contexto);
+  const cortes = mapearCortes(filas[0], definicion, "actualizacion", vigenciaDeHoja(hoja.nombre), avisos, contexto);
   const grupos = agruparEnOM(filas).map((grupo) => ({
     grupo,
     numero: valorUnico(grupo, 0),

@@ -15,7 +15,7 @@ oportunidad.
 | Seguridad de la Información | SGSI | 14 | 2023–2025 |
 | Sistema de Gestión Antisoborno | SGAS | 10 | 2024–2025 |
 
-Total: **162 OM** y **1 013 registros de seguimiento**, con último corte de la vigencia 2025 al
+Total: **162 OM** y **1 012 registros de seguimiento**, con último corte de la vigencia 2025 al
 30-sep-2026 (dataset generado el 2026-10-13 con `pnpm datos:importar`).
 
 La vista **Todos los sistemas integrados de gestión** (`/consolidado`) compara el estado vigente de

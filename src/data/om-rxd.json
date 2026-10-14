@@ -1,5 +1,5 @@
 {
- "generadoEn": "2026-10-13",
+ "generadoEn": "2026-10-14",
  "escalaClasificacion": [
   0,
   0.5,
@@ -8229,11 +8229,11 @@
        "clasificacion": 0
       },
       {
-       "corte": "2026-04-30",
-       "corteTexto": "2026-04-30",
+       "corte": "2026-09-30",
+       "corteTexto": "2026-09-30",
        "funcionario": "JOAN IMAYINNE GALVIS MORENO",
-       "observacion": "Aun no se cuenta con evidencias",
-       "clasificacion": 0
+       "observacion": "Se evidencia avance",
+       "clasificacion": 1
       }
      ]
     },
@@ -8258,8 +8258,8 @@
        "clasificacion": 2
       },
       {
-       "corte": "2026-04-30",
-       "corteTexto": "2026-04-30",
+       "corte": "2026-09-30",
+       "corteTexto": "2026-09-30",
        "funcionario": "JOAN IMAYINNE GALVIS MORENO",
        "observacion": "La Vicerrectoría Administrativa aprobó la contratación de cinco (5) profesionales responsables del manejo de los laboratorios adscritos a la Unidad de Apoyo Académico, quienes iniciaron labores el 19 de enero. Con estas contrataciones se da cumplimiento a la oportunidad de mejora aprobada, toda vez que los contratos de este personal fueron asociados a fechas de inicio acordes con el calendario aca…",
        "clasificacion": 2
@@ -8288,8 +8288,8 @@
        "clasificacion": 2
       },
       {
-       "corte": "2026-04-30",
-       "corteTexto": "2026-04-30",
+       "corte": "2026-09-30",
+       "corteTexto": "2026-09-30",
        "funcionario": "JOAN IMAYINNE GALVIS MORENO",
        "observacion": "En el acta de revisión por la dirección quedó plasmada la manifestación de la Alta Dirección frente a la conveniencia del SG-SST, evidenciada en el numeral 2 “Revisión por la Dirección de los Sistemas Integrados de Gestión de la Universidad de Cundinamarca”, conforme al numeral 9.3 de las normas ISO adoptadas por la Universidad. Esta alineada a la necesidades reales de la Universidad de Cundinamar…",
        "clasificacion": 2
@@ -8318,8 +8318,8 @@
        "clasificacion": 2
       },
       {
-       "corte": "2026-04-30",
-       "corteTexto": "2026-04-30",
+       "corte": "2026-09-30",
+       "corteTexto": "2026-09-30",
        "funcionario": "JOAN IMAYINNE GALVIS MORENO",
        "observacion": "En el acta de revisión por la dirección quedó plasmada la manifestación de la Alta Dirección frente a la eficaciadel SG-SST, evidenciada en el numeral 2 “Revisión por la Dirección de los Sistemas Integrados de Gestión de la Universidad de Cundinamarca”, conforme al numeral 9.3 de las normas ISO adoptadas por la Universidad. Esta alineada a la necesidades reales de la Universidad de Cundinamarca",
        "clasificacion": 2
@@ -8348,8 +8348,8 @@
        "clasificacion": 2
       },
       {
-       "corte": "2026-04-30",
-       "corteTexto": "2026-04-30",
+       "corte": "2026-09-30",
+       "corteTexto": "2026-09-30",
        "funcionario": "JOAN IMAYINNE GALVIS MORENO",
        "observacion": "En el acta de revisión por la dirección quedó plasmada la manifestación de la Alta Dirección frente a la pertinencia del SG-SST, evidenciada en el numeral 2 “Revisión por la Dirección de los Sistemas Integrados de Gestión de la Universidad de Cundinamarca”, conforme al numeral 9.3 de las normas ISO adoptadas por la Universidad. Esta alineada con los objetivos a la necesidades reales de la Universi…",
        "clasificacion": 2
@@ -8378,8 +8378,8 @@
        "clasificacion": 2
       },
       {
-       "corte": "2026-04-30",
-       "corteTexto": "2026-04-30",
+       "corte": "2026-09-30",
+       "corteTexto": "2026-09-30",
        "funcionario": "JOAN IMAYINNE GALVIS MORENO",
        "observacion": "En el acta de revisión por la dirección quedó plasmada la manifestación de la Alta Dirección frente a la pertinencia del SG-SST, evidenciada en el numeral 2 “Revisión por la Dirección de los Sistemas Integrados de Gestión de la Universidad de Cundinamarca”, conforme al numeral 9.3 de las normas ISO adoptadas por la Universidad. Esta alineada con los objetivos los cuales van en coherencia con el pl…",
        "clasificacion": 2
@@ -8405,13 +8405,6 @@
        "funcionario": "JOAN IMAYINNE GALVIS MORENO",
        "observacion": "En revision de quien es el reponsable toda vez que se expreso que no es responsabilidad del Sistema de Gestion de Seguridad y Salud en el Trabajo",
        "clasificacion": 0
-      },
-      {
-       "corte": "2026-04-30",
-       "corteTexto": "2026-04-30",
-       "funcionario": "JOAN IMAYINNE GALVIS MORENO",
-       "observacion": "En revision de quien es el reponsable toda vez que se expreso que no es responsabilidad del Sistema de Gestion de Seguridad y Salud en el Trabajo",
-       "clasificacion": 1.5
       }
      ]
     }

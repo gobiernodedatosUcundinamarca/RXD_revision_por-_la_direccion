@@ -34,18 +34,55 @@ export const SISTEMAS = [
 ];
 
 /**
- * Cortes con fecha mal digitada en los libros que se descartan por indicación
- * del responsable de los datos. Solo se descartan cuando están **fuera de orden
- * cronológico** (a su derecha hay un corte con fecha anterior): un corte
- * legítimo con la misma fecha llegaría al final de la hoja y no se toca.
+ * Reglas explícitas sobre columnas de corte mal rotuladas en los libros,
+ * indicadas por el equipo responsable de los datos. Cada regla identifica la
+ * columna por:
+ *
+ * - `sistema` y `fecha` tal como la dice el encabezado del libro;
+ * - `ocurrencia` (opcional): la n-ésima columna con esa fecha en la hoja (1 = primera);
+ * - `en` (opcional): `"base"` (libros de `data/`) o `"actualizacion"` (libros de
+ *   `data/<dd-mm-aaaa>/`);
+ * - `vigencia` (opcional): solo en la hoja de esa vigencia (por el año en su
+ *   nombre; las hojas sin año, como «SST», no la restringen);
+ * - `soloFueraDeOrden` (opcional): solo si a su derecha hay un corte con fecha
+ *   anterior. Así un corte legítimo con la misma fecha, que llegaría al final
+ *   de la hoja, no se toca.
  */
+
+/** Columnas de corte que se descartan. */
 export const CORTES_DESCARTADOS = [
   {
     sistema: "sgsi",
     fecha: "2026-12-30",
+    soloFueraDeOrden: true,
     motivo:
       "los dos primeros cortes de SGSI 2025 dicen «30 DE DICIEMBRE 2026» y no corresponden a esa fecha; " +
       "el corte vigente es el del 30 de septiembre de 2026 (indicación del 2026-10-13)",
+  },
+  {
+    sistema: "sgsst",
+    fecha: "2026-04-30",
+    ocurrencia: 2,
+    en: "base",
+    vigencia: "2025",
+    motivo:
+      "la segunda columna «30 ABRIL 2026» de SG SST 2025 la reemplaza la última columna de la hoja SST " +
+      "del libro 13-10-2026, que es el corte del 30 de septiembre de 2026 (indicación del 2026-10-14)",
+  },
+];
+
+/** Columnas de corte cuya fecha se corrige: `fechaReal` sustituye a la del encabezado. */
+export const CORTES_CORREGIDOS = [
+  {
+    sistema: "sgsst",
+    fecha: "2026-04-30",
+    ocurrencia: 2,
+    en: "actualizacion",
+    vigencia: "2025",
+    fechaReal: "2026-09-30",
+    motivo:
+      "la última columna de la hoja SST dice «30 ABRIL 2026» pero es el corte del 30 de septiembre de 2026 " +
+      "(indicación del 2026-10-14)",
   },
 ];
 
