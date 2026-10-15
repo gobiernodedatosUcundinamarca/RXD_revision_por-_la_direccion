@@ -3,6 +3,17 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versionado según
 [SemVer](https://semver.org/lang/es/).
 
+## [Sin publicar] — 2026-10-15
+
+### Eliminado
+
+- **Columna «Atención» de la tabla comparativa de `/consolidado`** (OM sin cerrar con calificación
+  vigente 0), a pedido del usuario. Se retira también de «Qué significan estas columnas». El
+  indicador equivalente de la vista Indicadores se mantiene.
+- **Etiqueta «! Vencida» de la columna «Entrega comprometida» de la vista Datos**, a pedido del
+  usuario, junto con su ícono de ayuda y la clase `.tag-vencida`. El indicador «Entrega
+  comprometida vencida y sin cierre» de la vista Indicadores se mantiene.
+
 ## [Sin publicar] — 2026-10-14
 
 ### Datos

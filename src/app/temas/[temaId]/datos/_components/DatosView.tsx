@@ -18,9 +18,7 @@ import {
   simboloClasificacion,
   simboloEstado,
 } from "@/lib/om/avance";
-import { estaVencida } from "@/lib/om/metricas";
-import { ultimoCorte } from "@/lib/om/dataset";
-import { AVANCE_OM, ESTADO_OM, VENCIDA } from "@/lib/om/explicaciones";
+import { AVANCE_OM, ESTADO_OM } from "@/lib/om/explicaciones";
 import { AyudaCalculo } from "@/components/ui/AyudaCalculo";
 
 type Columna = "vigencia" | "numero" | "oportunidad" | "entrega" | "avance";
@@ -30,7 +28,7 @@ const COLUMNAS: { id: Columna; label: string; numerica?: boolean; ayuda?: string
   { id: "vigencia", label: "Vigencia" },
   { id: "numero", label: "PM N°", numerica: true },
   { id: "oportunidad", label: "Oportunidad de mejora" },
-  { id: "entrega", label: "Entrega comprometida", ayuda: VENCIDA },
+  { id: "entrega", label: "Entrega comprometida" },
   { id: "avance", label: "Avance", numerica: true, ayuda: AVANCE_OM },
 ];
 
@@ -68,7 +66,6 @@ export function DatosView({ temaId }: { temaId: string }) {
   const [expandida, setExpandida] = useState<string | null>(null);
 
   const kpis = useMemo(() => construirKPIs(oms, todas), [oms, todas]);
-  const referencia = useMemo(() => ultimoCorte(todas), [todas]);
 
   const ordenadas = useMemo(() => {
     const factor = orden.direccion === "asc" ? 1 : -1;
@@ -155,7 +152,6 @@ export function DatosView({ temaId }: { temaId: string }) {
                   const estado = estadoDeOM(om);
                   const avance = avanceDeOM(om);
                   const abierta = expandida === om.id;
-                  const vencida = estaVencida(om, referencia);
 
                   return (
                     <Fragment key={om.id}>
@@ -178,14 +174,7 @@ export function DatosView({ temaId }: { temaId: string }) {
                             </span>
                           </button>
                         </td>
-                        <td>
-                          {entregaLegible(om)}
-                          {vencida && (
-                            <span className="tag-vencida">
-                              <span aria-hidden="true">!</span> Vencida
-                            </span>
-                          )}
-                        </td>
+                        <td>{entregaLegible(om)}</td>
                         <td className="pct">{avance}%</td>
                         <td>
                           <EstadoTag

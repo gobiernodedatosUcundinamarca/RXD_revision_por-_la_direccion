@@ -29,7 +29,6 @@ import {
 import { BarrasEstadoPorSistema } from "./BarrasEstadoPorSistema";
 import { AyudaCalculo } from "@/components/ui/AyudaCalculo";
 import {
-  ATENCION,
   AVANCE_GLOBAL,
   AVANCE_POR_SISTEMA,
   COMPOSICION_ESTADO,
@@ -209,10 +208,6 @@ export function ConsolidadoView() {
                       Sin cerrar
                       <AyudaCalculo cifra="Sin cerrar" texto={SIN_CERRAR} />
                     </th>
-                    <th scope="col" className="num">
-                      Atención
-                      <AyudaCalculo cifra="Atención" texto={ATENCION} />
-                    </th>
                     <th scope="col" className="pct">
                       Avance
                       <AyudaCalculo cifra="Avance" texto={AVANCE_POR_SISTEMA} />
@@ -250,7 +245,6 @@ export function ConsolidadoView() {
                         <td className="num">{fila.total}</td>
                         <td className="num">{fila.cumplidas}</td>
                         <td className="num">{fila.sinCerrar}</td>
-                        <td className="num">{fila.requierenAtencion}</td>
                         <td className="pct pct-green">{formatearPorcentaje(fila.avance, 1)}</td>
                         <td>
                           {fila.variacion === null ? (

@@ -36,7 +36,7 @@ Cada componente lleva su TSDoc con props y ejemplo de uso; aquí se documenta el
 | `FilterBar` | Barra de filtros **controlada**: el estado vive en `FiltrosProvider`. Chips de filtros activos, cada uno removible, y «Limpiar filtros». Cada `FilterConfig` admite `ayuda` (nodo opcional junto a la etiqueta). |
 | `InfoDisclosure` | Base genérica de disclosure informativo (`<details>` con «ⓘ + resumen» y panel). No se usa directo en las vistas; lo envuelven `EscalaAvanceInfo` y `ColumnasComparativoInfo`. |
 | `EscalaAvanceInfo` | `InfoDisclosure` con la tabla calificación → estado → % de avance. Se engancha como `ayuda` del filtro «Estado» en `useTableroOM`, así que aparece en las 5 vistas del layout interno sin repetirse. |
-| `ColumnasComparativoInfo` | `InfoDisclosure` que explica las columnas Cumplidas / Sin cerrar / Atención de la tabla comparativa de `/consolidado` y cómo se relacionan (Atención ⊆ Sin cerrar). |
+| `ColumnasComparativoInfo` | `InfoDisclosure` que explica las columnas Cumplidas / Sin cerrar de la tabla comparativa de `/consolidado` y cómo se relacionan (Sin cerrar = total − cumplidas). |
 | `EstadoTag` | Distintivo del estado de avance: punto de color, símbolo que crece con el avance y etiqueta **en tinta**. El color viste la marca, nunca el texto. |
 | `EstadoVacio` | Estado «Sin datos» cuando un filtro no deja registros (regla dashboard §4). |
 

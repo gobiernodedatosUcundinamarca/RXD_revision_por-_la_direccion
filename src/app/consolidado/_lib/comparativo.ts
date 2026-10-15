@@ -33,8 +33,6 @@ export interface FilaSistema {
   tasaCierre: number | null;
   /** Variación del avance frente al corte anterior, en puntos porcentuales. */
   variacion: number | null;
-  /** OM con calificación vigente en 0 (incluye las nunca calificadas). */
-  requierenAtencion: number;
   distribucion: SegmentoEstado[];
   vigencias: string[];
 }
@@ -62,7 +60,6 @@ export function compararSistemas(vigencia = ""): FilaSistema[] {
       avance: datos.avancePromedio,
       tasaCierre: datos.tasaCierre,
       variacion: variacionUltimoCorte(serie, "avance"),
-      requierenAtencion: datos.sinAvance,
       distribucion: distribucionPorEstado(oms),
       vigencias: datos.vigencias,
     };
